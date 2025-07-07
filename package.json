@@ -1,15 +1,13 @@
 {
-  "name": "qloohackathon",
+  "name": "qloohackathon-root",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "description": "Root package.json for documentation and project-level scripts. Use frontend/package.json and backend/package.json for app dependencies.",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "test": "echo \"No tests at root. Use frontend/ or backend/\" && exit 0"
   },
   "repository": {
     "type": "git",
@@ -21,23 +19,5 @@
   "bugs": {
     "url": "https://github.com/RpalZ/QlooHackathon/issues"
   },
-  "homepage": "https://github.com/RpalZ/QlooHackathon#readme",
-  "description": "",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.50.3",
-    "axios": "^1.10.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.0.1",
-    "express": "^5.1.0",
-    "helmet": "^8.1.0",
-    "next": "^15.3.5",
-    "openai": "^5.8.2",
-    "pg": "^8.16.3",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
-  },
-  "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6"
-  }
+  "homepage": "https://github.com/RpalZ/QlooHackathon#readme"
 }

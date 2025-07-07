@@ -224,5 +224,77 @@ Starter repo scaffold with Next.js + Express integration
 
 ---
 
+---
+
+## 🏗️ Project Structure (Updated)
+
+The project is organized as a modular monorepo with clear separation between frontend and backend:
+
+```
+QlooHackathon/
+├── backend/                # Node.js + Express API
+│   ├── controllers/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   ├── app.js
+│   ├── server.js
+│   ├── package.json        # Backend dependencies/scripts
+│   └── .env                # Backend environment variables
+├── frontend/               # Next.js 14 App Router frontend
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   └── utils/
+│   ├── public/
+│   ├── package.json        # Frontend dependencies/scripts
+│   └── .env.local          # Frontend environment variables
+├── docs/                   # Documentation
+│   ├── PRD.md
+│   ├── backend-api.md
+│   ├── frontend.md
+│   ├── checklist.md
+│   └── setup.md
+├── package.json            # Root (docs/scripts only, no app deps)
+└── .gitignore
+```
+
+---
+
+## 🚀 Frontend Overview (Next.js)
+- **Tech:** Next.js 14, TailwindCSS, React, Axios, Google Maps, Lucide React, TypeScript
+- **Structure:** All frontend code and dependencies are in `frontend/`
+- **Env:** Uses `frontend/.env.local` for API keys and config (see `frontend.md`)
+- **API Integration:** Calls backend endpoints, passing Supabase JWT in `Authorization` header
+- **See:** `docs/frontend.md` for full details
+
+---
+
+## 🧰 Backend Overview (Node.js/Express)
+- **Tech:** Express, Supabase, OpenAI, Qloo, Google Maps, pgvector, Axios
+- **Structure:** All backend code and dependencies are in `backend/`
+- **Env:** Uses `backend/.env` for secrets and config
+- **API:** Exposes `/api/taste`, `/api/taste/similar`, `/api/recommend`, `/api/booking` (see `backend-api.md`)
+- **Auth:** All endpoints require Supabase JWT in `Authorization` header
+
+---
+
+## 🗂️ Dependency & Environment Management
+- **Each app (frontend/backend) has its own `package.json` and installs only what it needs.**
+- **Each app has its own env file:**
+  - `backend/.env` for backend secrets (never exposed to frontend)
+  - `frontend/.env.local` for frontend config (only `NEXT_PUBLIC_` vars exposed to browser)
+- **Root `package.json` is for documentation/scripts only.**
+- **`.gitignore` excludes all `node_modules` folders and env files.**
+
+---
+
+## 🛠️ Deployment & CI/CD
+- **Frontend and backend can be deployed independently.**
+- **Each can be tested, built, and run from its own directory.**
+- **See `setup.md` and `checklist.md` for onboarding and integration.**
+
+---
+
 
 
