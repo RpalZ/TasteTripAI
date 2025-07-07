@@ -1,0 +1,33 @@
+{
+  "name": "qloohackathon",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RpalZ/QlooHackathon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RpalZ/QlooHackathon/issues"
+  },
+  "homepage": "https://github.com/RpalZ/QlooHackathon#readme",
+  "description": "",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.3",
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "openai": "^5.8.2",
+    "pg": "^8.16.3"
+  }
+}
