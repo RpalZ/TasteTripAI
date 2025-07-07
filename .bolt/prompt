@@ -1,0 +1,156 @@
+🧱 1. Component Structure & Naming
+Break UI into small, reusable components in /components.
+
+
+Use PascalCase for component files (e.g., RecommendationCard.tsx).
+
+
+Keep one component per file.
+
+
+Co-locate types.ts if component props are complex.
+
+
+
+🎨 2. UI Design Guidelines
+Use TailwindCSS for all styling.
+
+
+Follow a mobile-first layout, then scale up to desktop.
+
+
+Maintain consistent padding/margin, rounded-2xl, and subtle shadow-md across UI cards.
+
+
+Use icons/emojis to distinguish categories (e.g., 🎶 Music, 🍜 Food).
+
+
+
+🧭 3. Page & Layout Rules
+Main app lives in pages/index.tsx.
+
+
+Route handling should remain minimal; treat this as a single-page conversational app.
+
+
+Keep global layout logic (e.g., flex/grid, wrappers) in one Layout.tsx if needed.
+
+
+
+💬 4. Chat / Interaction Rules
+Maintain a chat flow UX:
+
+
+User input → loading → AI response → recommendation card
+
+
+Ensure ChatInput.tsx handles disabled state during loading.
+
+
+Use MessageBubble.tsx for clear sender/receiver distinction.
+
+
+
+🌐 5. API Integration Rules
+All API calls must use /api/ endpoints provided by the backend (Cursor).
+
+
+Centralize API logic in utils/fetcher.ts or custom hooks (e.g., useTasteSubmit.ts).
+
+
+Display loading states and error toasts on failed fetches.
+
+
+Do not hardcode API URLs; use relative paths and NEXT_PUBLIC_API_BASE_URL if needed.
+
+
+
+🧠 6. State & Memory Rules
+Use useState and useEffect for component-local state.
+
+
+Use useContext only if multiple components share the same memory or taste history.
+
+
+Preserve taste history client-side if backend memory isn't ready by caching locally.
+
+
+
+🗺 7. Map Integration Rules
+Use MapView.tsx only if location data (lat/lng) is available.
+
+
+Prefer Google Maps embed (iframe) for speed unless interactivity is needed.
+
+
+Respect dark/light mode via conditional Tailwind classes.
+
+
+
+🧼 8. Clean Code Guidelines
+Add JSdoc comments for exported components and functions.
+
+
+Group all Tailwind classes logically (e.g., layout → spacing → color → typography).
+
+
+No inline styles unless dynamically required.
+
+
+
+🔐 9. Environment Variables
+All config should be accessed via process.env.NEXT_PUBLIC_*:
+NEXT_PUBLIC_API_BASE_URL=/api
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
+
+Never commit sensitive keys or private access tokens.
+
+📦 10. File Naming Conventions
+Type
+Convention
+Example
+Component
+PascalCase
+TasteHistory.tsx
+Utility
+camelCase
+fetcher.ts
+Hook
+usePrefix
+useTasteSubmit.ts
+Context
+PascalCase + Context
+TasteContext.tsx
+
+
+✅ 11. Completion Checklist (for each feature/component)
+Responsive mobile & desktop
+
+
+Tailwind-styled consistently
+
+
+Mocked API integration works
+
+
+Loading and error states included
+
+
+PropTypes or Typescript interfaces used
+
+
+Committed with meaningful message
+
+
+
+🧩 12. Collaboration Rules
+Pull in the latest backend API contract before integration
+
+
+Comment all assumptions if API is not ready
+
+
+Test components in isolation with mock data
+
+
+Share major UI decisions or blockers in team chat
