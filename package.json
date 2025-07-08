@@ -20,6 +20,7 @@
     "url": "https://github.com/RpalZ/QlooHackathon/issues"
   },
   "homepage": "https://github.com/RpalZ/QlooHackathon#readme",
+<<<<<<< Updated upstream
   "dependencies": {
     "@supabase/supabase-js": "^2.50.3",
     "axios": "^1.10.0",
@@ -37,5 +38,9 @@
   "devDependencies": {
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6"
+=======
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11"
+>>>>>>> Stashed changes
   }
 }

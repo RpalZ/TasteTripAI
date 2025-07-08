@@ -127,7 +127,7 @@ export default function TasteHistory() {
                     e.stopPropagation()
                     handleRequery(entry)
                   }}
-                  className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-700"
+                  className="btn-secondary flex items-center space-x-1 text-xs"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>Re-query</span>
@@ -138,7 +138,7 @@ export default function TasteHistory() {
                     e.stopPropagation()
                     // Handle delete
                   }}
-                  className="flex items-center space-x-1 text-xs text-red-600 hover:text-red-700"
+                  className="btn-secondary flex items-center space-x-1 text-xs text-red-600 hover:text-red-700"
                 >
                   <Trash2 className="w-3 h-3" />
                   <span>Delete</span>
@@ -151,7 +151,7 @@ export default function TasteHistory() {
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-200">
-        <button className="w-full text-sm text-gray-600 hover:text-gray-800 transition-colors">
+        <button className="btn-secondary w-full">
           Clear All History
         </button>
       </div>
