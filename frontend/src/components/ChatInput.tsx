@@ -53,7 +53,7 @@ export default function ChatInput({ onSubmit, disabled = false }: ChatInputProps
         />
         <button
           type="button"
-          className="absolute right-3 bottom-3 p-1.5 text-gray-400 hover:text-gray-600 transition-all duration-500 ease-in-out hover:scale-110"
+          className="absolute right-3 bottom-3 p-1.5 text-gray-400 hover:text-gray-600 transition-all duration-300 ease-in-out hover:scale-110"
           disabled={disabled}
         >
           <Mic className="w-4 h-4" />

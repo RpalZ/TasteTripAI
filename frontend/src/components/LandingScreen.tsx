@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Sparkles, ArrowRight, Globe, MapPin, Heart } from 'lucide-react'
+import { Search, Sparkles, ArrowRight, Globe, LogOut } from 'lucide-react'
 
 interface TravelIdea {
   id: string
@@ -92,6 +92,13 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden m-0 p-0">
+      {/* Logout Button */}
+      <div className="absolute top-6 right-6 z-20">
+        <button className="p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 ease-in-out">
+          <LogOut className="w-5 h-5" />
+        </button>
+      </div>
+      
       {/* Background Landmarks Carousel */}
       <div className="absolute inset-0 z-0">
         {landmarks.map((landmark, index) => (
@@ -127,9 +134,9 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
           </div>
           
           <div className="hidden md:flex items-center space-x-6 text-white/80">
-            <button className="hover:text-white transition-colors duration-500">Discover</button>
-            <button className="hover:text-white transition-colors duration-500">Explore</button>
-            <button className="hover:text-white transition-colors duration-500">About</button>
+            <button className="hover:text-white transition-colors duration-300">Discover</button>
+            <button className="hover:text-white transition-colors duration-300">Explore</button>
+            <button className="hover:text-white transition-colors duration-300">About</button>
           </div>
         </header>
 
@@ -154,7 +161,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
             <div className="mb-12 slide-up stagger-1">
               <div 
                 className={`relative max-w-2xl mx-auto transition-all duration-1000 ease-in-out ${
-                  searchFocused ? 'scale-105' : 'scale-100'
+                  searchFocused ? 'scale-102' : 'scale-100'
                 }`}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur-lg opacity-30" />
@@ -172,7 +179,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                     />
                     <button
                       onClick={handleSearchClick}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-700 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
                     >
                       <span>Explore</span>
                       <ArrowRight className="w-5 h-5" />
@@ -217,10 +224,10 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                 <button
                   key={idea.id}
                   onClick={() => handleTravelIdeaClick(idea)}
-                  className={`group relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-700 ease-in-out border border-white/20 hover:border-white/30 hover:scale-105 slide-up stagger-${index + 4}`}
+                  className={`group relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 ease-in-out border border-white/20 hover:border-white/30 hover:scale-105 slide-up stagger-${index + 4}`}
                 >
                   {/* Gradient Background */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${idea.gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500`} />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${idea.gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`} />
                   
                   <div className="relative">
                     <div className="text-4xl mb-3">{idea.emoji}</div>
@@ -234,7 +241,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                       <span className="text-xs text-blue-300 uppercase tracking-wide">
                         Explore
                       </span>
-                      <ArrowRight className="w-4 h-4 text-blue-300 group-hover:translate-x-1 transition-transform duration-500" />
+                      <ArrowRight className="w-4 h-4 text-blue-300 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -256,31 +263,12 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
               </p>
               <button
                 onClick={handleSearchClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-700 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
               >
                 Start Your Journey
               </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Enhanced Floating Elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="floating-bubble absolute top-1/4 left-10">
-          <div className="w-3 h-3 bg-blue-400/60 rounded-full" />
-        </div>
-        <div className="floating-bubble absolute top-1/3 right-16">
-          <div className="w-2 h-2 bg-purple-400/60 rounded-full" />
-        </div>
-        <div className="floating-bubble absolute bottom-1/4 left-1/4">
-          <div className="w-4 h-4 bg-pink-400/40 rounded-full" />
-        </div>
-        <div className="floating-bubble absolute top-1/2 right-1/3">
-          <div className="w-2 h-2 bg-yellow-400/50 rounded-full" />
-        </div>
-        <div className="floating-bubble absolute bottom-1/3 right-10">
-          <div className="w-3 h-3 bg-green-400/50 rounded-full" />
         </div>
       </div>
     </div>

@@ -82,7 +82,7 @@ export default function TasteHistory() {
             placeholder="Search your tastes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-500 ease-in-out bg-white/90"
+            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300 ease-in-out bg-white/90"
           />
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function TasteHistory() {
           filteredHistory.map((entry) => (
             <div
               key={entry.id}
-              className="group p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all duration-500 ease-in-out cursor-pointer hover:scale-105"
+              className="group p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all duration-300 ease-in-out cursor-pointer hover:scale-105"
               onClick={() => handleRequery(entry)}
             >
               {/* Category & Time */}
