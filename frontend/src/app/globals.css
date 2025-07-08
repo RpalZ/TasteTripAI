@@ -62,7 +62,7 @@
   .stagger-5 { animation-delay: 1000ms; }
   .stagger-6 { animation-delay: 1200ms; }
   }
-}
+
 
 .loading-dots {
   display: inline-block;
