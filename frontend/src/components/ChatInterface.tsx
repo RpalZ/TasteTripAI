@@ -107,21 +107,32 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="flex h-screen w-full bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-pink-900/20 m-0 p-0 relative overflow-hidden">
+      {/* Background Texture */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-blue-400 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-40 right-32 w-24 h-24 bg-purple-400 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-pink-400 rounded-full blur-3xl animate-pulse delay-2000" />
+        <div className="absolute bottom-20 right-20 w-28 h-28 bg-blue-300 rounded-full blur-3xl animate-pulse delay-3000" />
+      </div>
+      
+      {/* Subtle Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30" />
+      
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative z-10">
         {/* Header */}
-        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 p-4 flex items-center justify-between">
+        <header className="bg-white/90 backdrop-blur-md border-b border-gray-200/50 p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-3">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-500 ease-in-out hover:scale-105"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
             )}
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -131,7 +142,7 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
           </div>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-all duration-500 ease-in-out hover:scale-105"
           >
             {showHistory ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -166,13 +177,13 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
         </div>
 
         {/* Chat Input */}
-        <div className="p-4 bg-white/80 backdrop-blur-sm border-t border-gray-200">
+        <div className="p-4 bg-white/90 backdrop-blur-md border-t border-gray-200/50 shadow-sm">
           <ChatInput onSubmit={handleUserInput} disabled={isLoading} />
         </div>
       </div>
 
       {/* Taste History Sidebar */}
-      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 bg-white border-l border-gray-200`}>
+      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 bg-white/95 backdrop-blur-md border-l border-gray-200/50 relative z-10`}>
         <TasteHistory />
       </div>
     </div>

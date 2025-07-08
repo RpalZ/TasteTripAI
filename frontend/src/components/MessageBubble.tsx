@@ -41,8 +41,8 @@ export default function MessageBubble({ message, isLoading = false }: MessageBub
         <div className={`chat-bubble ${isUser ? 'ml-3' : 'mr-3'}`}>
           <div className={`px-4 py-3 rounded-2xl ${
             isUser 
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
-              : 'bg-white border border-gray-200 text-gray-900'
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+              : 'bg-white/95 backdrop-blur-sm border border-gray-200/50 text-gray-900 shadow-md'
           }`}>
             <p className="text-sm leading-relaxed whitespace-pre-wrap">
               {isLoading ? (

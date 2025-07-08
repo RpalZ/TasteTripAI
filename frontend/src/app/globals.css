@@ -5,12 +5,20 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
   
   body {
-    @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen;
+    @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen m-0 p-0;
+    overflow-x: hidden;
   }
 }
 
@@ -20,19 +28,39 @@
   }
   
   .recommendation-card {
-    @apply bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100;
+    @apply bg-white/90 backdrop-blur-sm rounded-2xl shadow-md hover:shadow-lg transition-all duration-700 ease-in-out border border-gray-100 hover:scale-105;
   }
   
   .taste-input {
-    @apply w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-200;
+    @apply w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-500 ease-in-out;
   }
   
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-2xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg;
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-2xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-500 ease-in-out shadow-md hover:shadow-lg hover:scale-105;
   }
   
   .btn-secondary {
-    @apply bg-white text-gray-700 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-200;
+    @apply bg-white/90 backdrop-blur-sm text-gray-700 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-500 ease-in-out hover:scale-105;
+  }
+  
+  .page-transition {
+    @apply transition-all duration-1000 ease-in-out;
+  }
+  
+  .fade-in {
+    animation: fadeIn 800ms ease-in-out forwards;
+  }
+  
+  .slide-up {
+    animation: slideUp 1000ms ease-in-out forwards;
+  }
+  
+  .stagger-1 { animation-delay: 200ms; }
+  .stagger-2 { animation-delay: 400ms; }
+  .stagger-3 { animation-delay: 600ms; }
+  .stagger-4 { animation-delay: 800ms; }
+  .stagger-5 { animation-delay: 1000ms; }
+  .stagger-6 { animation-delay: 1200ms; }
   }
 }
 
@@ -50,4 +78,20 @@
   40% { content: '.'; }
   60% { content: '..'; }
   80%, 100% { content: '...'; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Remove any default margins/padding */
+#__next {
+  margin: 0;
+  padding: 0;
 }
