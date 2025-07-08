@@ -1,15 +1,13 @@
 {
-  "name": "qloohackathon",
+  "name": "qloohackathon-root",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "description": "Root package.json for documentation and project-level scripts. Use frontend/package.json and backend/package.json for app dependencies.",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "test": "echo \"No tests at root. Use frontend/ or backend/\" && exit 0"
   },
   "repository": {
     "type": "git",
