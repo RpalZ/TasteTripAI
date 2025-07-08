@@ -20,7 +20,6 @@
     "url": "https://github.com/RpalZ/QlooHackathon/issues"
   },
   "homepage": "https://github.com/RpalZ/QlooHackathon#readme",
-  "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.50.3",
     "axios": "^1.10.0",
