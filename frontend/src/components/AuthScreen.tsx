@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Sparkles, Mail, Lock, ArrowRight, Globe, MapPin, Heart } from 'lucide-react'
+import { Sparkles, Mail, Lock, ArrowRight, LogOut } from 'lucide-react'
 
 interface AuthScreenProps {
   onContinue: () => void
@@ -25,16 +25,23 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden m-0 p-0">
+      {/* Logout Button */}
+      <div className="absolute top-6 right-6 z-20">
+        <button className="p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 ease-in-out">
+          <LogOut className="w-5 h-5" />
+        </button>
+      </div>
+      
       {/* Background with Cultural Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900">
         {/* Floating Bubbles */}
         <div className="absolute inset-0 opacity-20">
-          <div className="floating-bubble absolute top-20 left-20 w-32 h-32 bg-white/30 rounded-full blur-sm" />
-          <div className="floating-bubble absolute top-40 right-32 w-24 h-24 bg-blue-300/40 rounded-full blur-sm" />
-          <div className="floating-bubble absolute bottom-32 left-1/4 w-40 h-40 bg-purple-300/30 rounded-full blur-sm" />
-          <div className="floating-bubble absolute bottom-20 right-20 w-28 h-28 bg-pink-300/40 rounded-full blur-sm" />
-          <div className="floating-bubble absolute top-1/2 left-10 w-16 h-16 bg-yellow-300/30 rounded-full blur-sm" />
-          <div className="floating-bubble absolute top-1/3 right-1/4 w-20 h-20 bg-green-300/30 rounded-full blur-sm" />
+          <div className="floating-bubble absolute top-20 left-20 w-24 h-24 bg-white/20 rounded-full blur-xl" />
+          <div className="floating-bubble absolute top-40 right-32 w-16 h-16 bg-purple-300/30 rounded-full blur-lg" />
+          <div className="floating-bubble absolute bottom-32 left-1/4 w-32 h-32 bg-purple-300/20 rounded-full blur-xl" />
+          <div className="floating-bubble absolute bottom-20 right-20 w-20 h-20 bg-white/25 rounded-full blur-lg" />
+          <div className="floating-bubble absolute top-1/2 left-10 w-12 h-12 bg-blue-300/25 rounded-full blur-md" />
+          <div className="floating-bubble absolute top-1/3 right-1/4 w-28 h-28 bg-pink-300/20 rounded-full blur-xl" />
         </div>
         
         {/* Gradient Overlay */}
@@ -46,7 +53,7 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
         <div className="w-full max-w-md">
           {/* Logo and Branding */}
           <div className="text-center mb-8 fade-in">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl hover:scale-110 transition-transform duration-700 ease-in-out">
+            <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl hover:scale-110 transition-transform duration-300 ease-in-out">
               <Sparkles className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
@@ -75,7 +82,7 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-500 ease-in-out bg-white/90"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300 ease-in-out bg-white/90"
                   required
                 />
               </div>
@@ -92,7 +99,7 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-500 ease-in-out bg-white/90"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300 ease-in-out bg-white/90"
                   required
                 />
               </div>
@@ -101,7 +108,7 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
               <button
                 type="submit"
                 disabled={isLoading || !email || !password}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-700 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 hover:scale-105"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 hover:scale-105"
               >
                 {isLoading ? (
                   <div className="loading-dots text-lg">Signing in</div>
@@ -118,44 +125,19 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 mb-4">
                 Don't have an account?{' '}
-                <button className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-500">
+                <button className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-300">
                   Sign up here
                 </button>
               </p>
               
               <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-                <button className="hover:text-gray-700 transition-colors duration-500">Privacy Policy</button>
+                <button className="hover:text-gray-700 transition-colors duration-300">Privacy Policy</button>
                 <span>•</span>
-                <button className="hover:text-gray-700 transition-colors duration-500">Terms of Service</button>
+                <button className="hover:text-gray-700 transition-colors duration-300">Terms of Service</button>
               </div>
-            </div>
-          </div>
-
-          {/* Simplified Description */}
-          <div className="mt-8 text-center slide-up stagger-1">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-sm mx-auto">
-              <div className="flex items-center justify-center space-x-4 mb-3">
-                <Globe className="w-6 h-6 text-blue-300" />
-                <MapPin className="w-6 h-6 text-purple-300" />
-                <Heart className="w-6 h-6 text-pink-300" />
-              </div>
-              <p className="text-white text-sm leading-relaxed">
-                AI-powered cultural discovery across food, music, art, and travel
-              </p>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Additional Floating Elements */}
-      <div className="absolute top-1/4 left-10 floating-bubble">
-        <div className="w-3 h-3 bg-blue-400/60 rounded-full" />
-      </div>
-      <div className="absolute top-1/3 right-16 floating-bubble">
-        <div className="w-2 h-2 bg-purple-400/60 rounded-full" />
-      </div>
-      <div className="absolute bottom-1/4 left-1/4 floating-bubble">
-        <div className="w-4 h-4 bg-pink-400/40 rounded-full" />
       </div>
     </div>
   )
