@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -16,17 +15,3 @@ module.exports = {
   },
   plugins: [],
 }
-=======
-module.exports = {
-  content: [
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/utils/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  theme: {
-    extend: {}, // Do not override theme.colors, just extend
-  },
-  plugins: [],
-}; 
->>>>>>> Stashed changes
