@@ -153,7 +153,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
             {/* Search Input */}
             <div className="mb-12 slide-up stagger-1">
               <div 
-                className={`relative max-w-2xl mx-auto transition-all duration-700 ease-in-out ${
+                className={`relative max-w-2xl mx-auto transition-all duration-1000 ease-in-out ${
                   searchFocused ? 'scale-105' : 'scale-100'
                 }`}
               >
@@ -172,7 +172,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                     />
                     <button
                       onClick={handleSearchClick}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-500 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-700 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
                     >
                       <span>Explore</span>
                       <ArrowRight className="w-5 h-5" />
@@ -256,7 +256,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
               </p>
               <button
                 onClick={handleSearchClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-500 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-700 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
               >
                 Start Your Journey
               </button>
@@ -265,15 +265,23 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         </div>
       </div>
 
-      {/* Floating Elements */}
-      <div className="absolute top-1/4 left-10 animate-pulse">
-        <div className="w-3 h-3 bg-blue-400 rounded-full opacity-60" />
-      </div>
-      <div className="absolute top-1/3 right-16 animate-pulse delay-1000">
-        <div className="w-2 h-2 bg-purple-400 rounded-full opacity-60" />
-      </div>
-      <div className="absolute bottom-1/4 left-1/4 animate-pulse delay-2000">
-        <div className="w-4 h-4 bg-pink-400 rounded-full opacity-40" />
+      {/* Enhanced Floating Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="floating-bubble absolute top-1/4 left-10">
+          <div className="w-3 h-3 bg-blue-400/60 rounded-full" />
+        </div>
+        <div className="floating-bubble absolute top-1/3 right-16">
+          <div className="w-2 h-2 bg-purple-400/60 rounded-full" />
+        </div>
+        <div className="floating-bubble absolute bottom-1/4 left-1/4">
+          <div className="w-4 h-4 bg-pink-400/40 rounded-full" />
+        </div>
+        <div className="floating-bubble absolute top-1/2 right-1/3">
+          <div className="w-2 h-2 bg-yellow-400/50 rounded-full" />
+        </div>
+        <div className="floating-bubble absolute bottom-1/3 right-10">
+          <div className="w-3 h-3 bg-green-400/50 rounded-full" />
+        </div>
       </div>
     </div>
   )

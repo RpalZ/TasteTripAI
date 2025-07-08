@@ -14,8 +14,10 @@ export default function Home() {
   const handleStateChange = async (newState: AppState) => {
     setIsTransitioning(true)
     // Add delay for smooth transition
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise(resolve => setTimeout(resolve, 500))
     setAppState(newState)
+    // Add another delay for the fade-in effect
+    await new Promise(resolve => setTimeout(resolve, 200))
     setIsTransitioning(false)
   }
 
@@ -33,7 +35,7 @@ export default function Home() {
   }
 
   return (
-    <div className={`min-h-screen w-full m-0 p-0 ${isTransitioning ? 'opacity-50' : 'opacity-100'} page-transition`}>
+    <div className={`min-h-screen w-full m-0 p-0 ${isTransitioning ? 'opacity-0' : 'opacity-100'} transition-opacity duration-1000 ease-in-out`}>
       {renderCurrentScreen()}
     </div>
   )

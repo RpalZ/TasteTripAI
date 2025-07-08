@@ -107,17 +107,33 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
   }
 
   return (
-    <div className="flex h-screen w-full bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-pink-900/20 m-0 p-0 relative overflow-hidden">
-      {/* Background Texture */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-blue-400 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-40 right-32 w-24 h-24 bg-purple-400 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-pink-400 rounded-full blur-3xl animate-pulse delay-2000" />
-        <div className="absolute bottom-20 right-20 w-28 h-28 bg-blue-300 rounded-full blur-3xl animate-pulse delay-3000" />
+    <div className="flex h-screen w-full bg-gradient-to-br from-blue-900/30 via-purple-900/20 to-pink-900/30 m-0 p-0 relative overflow-hidden">
+      {/* Enhanced Background with Floating Bubbles */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="floating-bubble absolute top-20 left-20 w-32 h-32 bg-blue-400/40 rounded-full blur-2xl" />
+        <div className="floating-bubble absolute top-40 right-32 w-24 h-24 bg-purple-400/40 rounded-full blur-2xl" />
+        <div className="floating-bubble absolute bottom-32 left-1/4 w-40 h-40 bg-pink-400/40 rounded-full blur-2xl" />
+        <div className="floating-bubble absolute bottom-20 right-20 w-28 h-28 bg-blue-300/40 rounded-full blur-2xl" />
+        <div className="floating-bubble absolute top-1/2 left-10 w-20 h-20 bg-yellow-400/30 rounded-full blur-2xl" />
+        <div className="floating-bubble absolute top-1/3 right-1/4 w-36 h-36 bg-green-400/30 rounded-full blur-2xl" />
       </div>
       
-      {/* Subtle Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/30" />
+      {/* Enhanced Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/40" />
+      
+      {/* Subtle Wave Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <svg className="w-full h-full" viewBox="0 0 1200 800" preserveAspectRatio="none">
+          <path d="M0,400 C300,200 600,600 1200,400 L1200,800 L0,800 Z" fill="url(#wave-gradient)" />
+          <defs>
+            <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#3B82F6" />
+              <stop offset="50%" stopColor="#8B5CF6" />
+              <stop offset="100%" stopColor="#EC4899" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
       
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col relative z-10">
@@ -127,7 +143,7 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-500 ease-in-out hover:scale-105"
+                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-700 ease-in-out hover:scale-105"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
@@ -142,7 +158,7 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
           </div>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-all duration-500 ease-in-out hover:scale-105"
+            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-all duration-700 ease-in-out hover:scale-105"
           >
             {showHistory ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
