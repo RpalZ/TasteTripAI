@@ -1,16 +1,33 @@
 'use client'
 
 import { useState } from 'react'
-import { Sparkles, Mail, Lock, ArrowRight, LogOut } from 'lucide-react'
+import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react'
 
 interface AuthScreenProps {
-  onContinue: () => void
+  onLogin: () => void
 }
 
-export default function AuthScreen({ onContinue }: AuthScreenProps) {
+const inspirationalQuotes = [
+  "Discover cultures that speak to your soul",
+  "Every taste tells a story waiting to be explored",
+  "Your next cultural adventure is just a conversation away",
+  "AI-powered discovery meets human curiosity",
+  "Where taste meets travel, magic happens"
+]
+
+export default function AuthScreen({ onLogin }: AuthScreenProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [currentQuote, setCurrentQuote] = useState(0)
+
+  // Rotate quotes every 4 seconds
+  useState(() => {
+    const interval = setInterval(() => {
+      setCurrentQuote((prev) => (prev + 1) % inspirationalQuotes.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,32 +37,25 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
     await new Promise(resolve => setTimeout(resolve, 1500))
     
     setIsLoading(false)
-    onContinue()
+    onLogin()
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0">
-      {/* Logout Button */}
-      <div className="absolute top-6 right-6 z-20">
-        <button className="p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 ease-in-out">
-          <LogOut className="w-5 h-5" />
-        </button>
+    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 bg-slate-900">
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, #3B82F6 0%, transparent 50%), 
+                           radial-gradient(circle at 75% 75%, #8B5CF6 0%, transparent 50%)`
+        }} />
       </div>
       
-      {/* Background with Cultural Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900">
-        {/* Floating Bubbles */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="floating-bubble absolute top-20 left-20 w-24 h-24 bg-white/20 rounded-full blur-xl" />
-          <div className="floating-bubble absolute top-40 right-32 w-16 h-16 bg-purple-300/30 rounded-full blur-lg" />
-          <div className="floating-bubble absolute bottom-32 left-1/4 w-32 h-32 bg-purple-300/20 rounded-full blur-xl" />
-          <div className="floating-bubble absolute bottom-20 right-20 w-20 h-20 bg-white/25 rounded-full blur-lg" />
-          <div className="floating-bubble absolute top-1/2 left-10 w-12 h-12 bg-blue-300/25 rounded-full blur-md" />
-          <div className="floating-bubble absolute top-1/3 right-1/4 w-28 h-28 bg-pink-300/20 rounded-full blur-xl" />
-        </div>
-        
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+      {/* Floating Bubbles - More Subtle */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="floating-bubble absolute top-20 left-20 w-16 h-16 bg-blue-400 rounded-full blur-xl" />
+        <div className="floating-bubble absolute top-40 right-32 w-12 h-12 bg-purple-400 rounded-full blur-lg" />
+        <div className="floating-bubble absolute bottom-32 left-1/4 w-20 h-20 bg-blue-300 rounded-full blur-xl" />
+        <div className="floating-bubble absolute bottom-20 right-20 w-14 h-14 bg-purple-300 rounded-full blur-lg" />
       </div>
 
       {/* Main Content */}
@@ -56,15 +66,19 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
             <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl hover:scale-110 transition-transform duration-300 ease-in-out">
               <Sparkles className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
               Welcome to
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 {' '}TasteTrip AI
               </span>
             </h1>
-            <p className="text-blue-100 text-lg leading-relaxed max-w-md mx-auto">
-              Discover personalized cultural experiences powered by AI taste intelligence
-            </p>
+            
+            {/* Rotating Inspirational Quotes */}
+            <div className="h-12 flex items-center justify-center">
+              <p className="text-blue-200 text-lg leading-relaxed max-w-md mx-auto transition-all duration-500 ease-in-out">
+                {inspirationalQuotes[currentQuote]}
+              </p>
+            </div>
           </div>
 
           {/* Auth Form */}
@@ -129,6 +143,10 @@ export default function AuthScreen({ onContinue }: AuthScreenProps) {
                   Sign up here
                 </button>
               </p>
+              
+              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-300 mb-4">
+                Forgot Password?
+              </button>
               
               <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
                 <button className="hover:text-gray-700 transition-colors duration-300">Privacy Policy</button>

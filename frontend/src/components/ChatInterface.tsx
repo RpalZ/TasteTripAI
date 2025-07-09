@@ -5,7 +5,7 @@ import ChatInput from '@/components/ChatInput'
 import MessageBubble from '@/components/MessageBubble'
 import RecommendationCard from '@/components/RecommendationCard'
 import TasteHistory from '@/components/TasteHistory'
-import { Menu, X, Sparkles, ArrowLeft, LogOut } from 'lucide-react'
+import { Menu, X, Sparkles, ArrowLeft } from 'lucide-react'
 
 interface Message {
   id: string
@@ -42,7 +42,7 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
   const [showHistory, setShowHistory] = useState(false)
 
   const handleUserInput = async (input: string) => {
-    // Add user message
+    // Add user message with animation
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -107,55 +107,40 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
   }
 
   return (
-    <div className="flex h-screen w-full bg-gradient-to-br from-blue-900/30 via-purple-900/20 to-pink-900/30 m-0 p-0 relative overflow-hidden">
-      {/* Enhanced Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/40" />
-      
-      {/* Subtle Wave Pattern */}
+    <div className="flex h-screen w-full bg-slate-900 m-0 p-0 pt-16 relative overflow-hidden">
+      {/* Textured Background */}
       <div className="absolute inset-0 opacity-5">
-        <svg className="w-full h-full" viewBox="0 0 1200 800" preserveAspectRatio="none">
-          <path d="M0,400 C300,200 600,600 1200,400 L1200,800 L0,800 Z" fill="url(#wave-gradient)" />
-          <defs>
-            <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#3B82F6" />
-              <stop offset="50%" stopColor="#8B5CF6" />
-              <stop offset="100%" stopColor="#EC4899" />
-            </linearGradient>
-          </defs>
-        </svg>
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 20% 80%, #1e40af 0%, transparent 50%), 
+                           radial-gradient(circle at 80% 20%, #7c3aed 0%, transparent 50%),
+                           radial-gradient(circle at 40% 40%, #0f172a 0%, transparent 50%)`
+        }} />
       </div>
       
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col relative z-10">
         {/* Header */}
-        <header className="bg-white/90 backdrop-blur-md border-b border-gray-200/50 p-4 flex items-center justify-between shadow-sm">
-          {/* Logout Button */}
-          <div className="absolute top-4 right-4 z-20">
-            <button className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-all duration-300 ease-in-out">
-              <LogOut className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-          
+        <header className="bg-slate-800/90 backdrop-blur-md border-b border-slate-700/50 p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-3">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-300 ease-in-out hover:scale-105"
+                className="p-2 rounded-xl hover:bg-slate-700 transition-all duration-300 ease-in-out hover:scale-105 text-slate-300 hover:text-white"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <ArrowLeft className="w-5 h-5" />
               </button>
             )}
             <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">TasteTrip AI</h1>
-              <p className="text-sm text-gray-600">Your Cultural Discovery Assistant</p>
+              <h1 className="text-xl font-bold text-white">TasteTrip AI</h1>
+              <p className="text-sm text-slate-400">Your Cultural Discovery Assistant</p>
             </div>
           </div>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-all duration-300 ease-in-out hover:scale-105"
+            className="lg:hidden p-2 rounded-xl hover:bg-slate-700 transition-all duration-300 ease-in-out hover:scale-105 text-slate-300 hover:text-white"
           >
             {showHistory ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -163,13 +148,15 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {messages.map((message) => (
-            <div key={message.id}>
+          {messages.map((message, index) => (
+            <div key={message.id} className="message-enter" style={{ animationDelay: `${index * 100}ms` }}>
               <MessageBubble message={message} />
               {message.recommendations && (
                 <div className="mt-4 grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-                  {message.recommendations.map((rec, index) => (
-                    <RecommendationCard key={index} recommendation={rec} />
+                  {message.recommendations.map((rec, recIndex) => (
+                    <div key={recIndex} className="slide-up" style={{ animationDelay: `${recIndex * 150}ms` }}>
+                      <RecommendationCard recommendation={rec} />
+                    </div>
                   ))}
                 </div>
               )}
@@ -177,26 +164,28 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
           ))}
           
           {isLoading && (
-            <MessageBubble 
-              message={{
-                id: 'loading',
-                type: 'ai',
-                content: 'Analyzing your taste profile and finding perfect recommendations',
-                timestamp: new Date()
-              }}
-              isLoading={true}
-            />
+            <div className="message-enter">
+              <MessageBubble 
+                message={{
+                  id: 'loading',
+                  type: 'ai',
+                  content: 'Analyzing your taste profile and finding perfect recommendations',
+                  timestamp: new Date()
+                }}
+                isLoading={true}
+              />
+            </div>
           )}
         </div>
 
         {/* Chat Input */}
-        <div className="p-4 bg-white/90 backdrop-blur-md border-t border-gray-200/50 shadow-sm">
+        <div className="p-4 bg-slate-800/90 backdrop-blur-md border-t border-slate-700/50 shadow-sm">
           <ChatInput onSubmit={handleUserInput} disabled={isLoading} />
         </div>
       </div>
 
       {/* Taste History Sidebar */}
-      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 bg-white/95 backdrop-blur-md border-l border-gray-200/50 relative z-10`}>
+      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 bg-slate-800/95 backdrop-blur-md border-l border-slate-700/50 relative z-10`}>
         <TasteHistory />
       </div>
     </div>

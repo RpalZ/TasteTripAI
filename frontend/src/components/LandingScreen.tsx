@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Sparkles, ArrowRight, Globe, LogOut } from 'lucide-react'
+import { Search, ArrowRight, Globe, Sparkles, Users, MapPin, Zap } from 'lucide-react'
 
 interface TravelIdea {
   id: string
@@ -85,27 +85,18 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
   }
 
   const handleTravelIdeaClick = (idea: TravelIdea) => {
-    // Pre-fill the chat with the travel idea
     onStartChat()
-    // You can pass the idea to the chat interface here
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0">
-      {/* Logout Button */}
-      <div className="absolute top-6 right-6 z-20">
-        <button className="p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 ease-in-out">
-          <LogOut className="w-5 h-5" />
-        </button>
-      </div>
-      
+    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 pt-16 bg-slate-900">
       {/* Background Landmarks Carousel */}
       <div className="absolute inset-0 z-0">
         {landmarks.map((landmark, index) => (
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-2000 ease-in-out ${
-              index === currentLandmark ? 'opacity-30' : 'opacity-0'
+              index === currentLandmark ? 'opacity-20' : 'opacity-0'
             }`}
             style={{
               backgroundImage: `url(${landmark})`,
@@ -115,52 +106,52 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
           />
         ))}
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/30 to-pink-900/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-blue-900/40 to-purple-900/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <header className="p-6 flex items-center justify-between fade-in">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">TasteTrip AI</h1>
-              <p className="text-blue-100 text-sm">Cultural Discovery Assistant</p>
-            </div>
-          </div>
-          
-          <div className="hidden md:flex items-center space-x-6 text-white/80">
-            <button className="hover:text-white transition-colors duration-300">Discover</button>
-            <button className="hover:text-white transition-colors duration-300">Explore</button>
-            <button className="hover:text-white transition-colors duration-300">About</button>
-          </div>
-        </header>
-
         {/* Hero Section */}
-        <div className="flex-1 flex items-center justify-center px-6">
+        <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="max-w-4xl mx-auto text-center">
             {/* Main Headline */}
             <div className="mb-8 slide-up">
-              <h2 className="text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
+              <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
                 Discover Your
                 <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   {' '}Perfect{' '}
                 </span>
                 Cultural Journey
               </h2>
-              <p className="text-xl md:text-2xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xl md:text-2xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8">
                 AI-powered recommendations for food, music, art, and travel experiences tailored to your unique taste
               </p>
             </div>
 
+            {/* Info Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-12 slide-up stagger-1">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <MapPin className="w-8 h-8 text-blue-400 mx-auto mb-3" />
+                <div className="text-2xl font-bold text-white mb-1">50K+</div>
+                <div className="text-slate-300 text-sm">Cultural Spots</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <Globe className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                <div className="text-2xl font-bold text-white mb-1">120+</div>
+                <div className="text-slate-300 text-sm">Countries</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <Zap className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
+                <div className="text-2xl font-bold text-white mb-1">AI</div>
+                <div className="text-slate-300 text-sm">Powered</div>
+              </div>
+            </div>
+
             {/* Search Input */}
-            <div className="mb-12 slide-up stagger-1">
+            <div className="mb-12 slide-up stagger-2">
               <div 
-                className={`relative max-w-2xl mx-auto transition-all duration-1000 ease-in-out ${
+                className={`relative max-w-2xl mx-auto transition-all duration-500 ease-in-out ${
                   searchFocused ? 'scale-102' : 'scale-100'
                 }`}
               >
@@ -189,20 +180,14 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto mb-16 slide-up stagger-2">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">50K+</div>
-                <div className="text-blue-200 text-sm">Cultural Spots</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">120+</div>
-                <div className="text-blue-200 text-sm">Countries</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">AI</div>
-                <div className="text-blue-200 text-sm">Powered</div>
-              </div>
+            {/* Bold CTA Button */}
+            <div className="mb-16 slide-up stagger-3">
+              <button
+                onClick={handleSearchClick}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-3xl text-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out shadow-2xl hover:shadow-3xl hover:scale-110 border-2 border-white/20"
+              >
+                Start Your Cultural Journey
+              </button>
             </div>
           </div>
         </div>
@@ -210,11 +195,11 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         {/* Travel Ideas Section */}
         <div className="px-6 pb-12">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8 slide-up stagger-3">
+            <div className="text-center mb-8 slide-up stagger-4">
               <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
                 Popular Cultural Experiences
               </h3>
-              <p className="text-blue-200">
+              <p className="text-slate-300">
                 Get inspired by these curated cultural journeys
               </p>
             </div>
@@ -224,7 +209,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                 <button
                   key={idea.id}
                   onClick={() => handleTravelIdeaClick(idea)}
-                  className={`group relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 ease-in-out border border-white/20 hover:border-white/30 hover:scale-105 slide-up stagger-${index + 4}`}
+                  className={`group relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 ease-in-out border border-white/20 hover:border-white/30 hover:scale-105 slide-up stagger-${index + 5}`}
                 >
                   {/* Gradient Background */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${idea.gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`} />
@@ -234,14 +219,14 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                     <h4 className="text-xl font-semibold text-white mb-2">
                       {idea.title}
                     </h4>
-                    <p className="text-blue-200 text-sm mb-4">
+                    <p className="text-slate-300 text-sm mb-4">
                       {idea.subtitle}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-blue-300 uppercase tracking-wide">
+                      <span className="text-xs text-slate-400 uppercase tracking-wide">
                         Explore
                       </span>
-                      <ArrowRight className="w-4 h-4 text-blue-300 group-hover:translate-x-1 transition-transform duration-300" />
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -254,11 +239,11 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         <div className="px-6 pb-8">
           <div className="max-w-4xl mx-auto text-center slide-up stagger-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <Globe className="w-12 h-12 text-blue-300 mx-auto mb-4" />
+              <Users className="w-12 h-12 text-blue-300 mx-auto mb-4" />
               <h4 className="text-2xl font-bold text-white mb-3">
                 Ready to Discover?
               </h4>
-              <p className="text-blue-200 mb-6">
+              <p className="text-slate-300 mb-6">
                 Join thousands of cultural explorers finding their perfect experiences
               </p>
               <button

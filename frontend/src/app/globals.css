@@ -17,7 +17,7 @@
   }
   
   body {
-    @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen m-0 p-0;
+    @apply bg-slate-900 min-h-screen m-0 p-0;
     overflow-x: hidden;
   }
 }
@@ -28,7 +28,7 @@
   }
   
   .recommendation-card {
-    @apply bg-white/90 backdrop-blur-sm rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100 hover:scale-105;
+    @apply bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100 hover:scale-105;
   }
   
   .taste-input {
@@ -40,7 +40,7 @@
   }
   
   .btn-secondary {
-    @apply bg-white/90 backdrop-blur-sm text-gray-700 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-300 ease-in-out hover:scale-105;
+    @apply bg-white text-gray-700 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-300 ease-in-out hover:scale-105;
   }
   
   .page-transition {
@@ -48,11 +48,11 @@
   }
   
   .fade-in {
-    animation: fadeIn 500ms ease-in-out forwards;
+    animation: fadeIn 400ms ease-in-out forwards;
   }
   
   .slide-up {
-    animation: slideUp 600ms ease-in-out forwards;
+    animation: slideUp 500ms ease-in-out forwards;
   }
   
   .stagger-1 { animation-delay: 100ms; }
@@ -63,14 +63,16 @@
   .stagger-6 { animation-delay: 600ms; }
   
   .floating-bubble {
-    animation: float 8s ease-in-out infinite;
+    animation: float 6s ease-in-out infinite;
   }
   
-  .floating-bubble:nth-child(2) { animation-delay: 2s; }
-  .floating-bubble:nth-child(3) { animation-delay: 4s; }
-  .floating-bubble:nth-child(4) { animation-delay: 1s; }
-  .floating-bubble:nth-child(5) { animation-delay: 3s; }
-  .floating-bubble:nth-child(6) { animation-delay: 5s; }
+  .floating-bubble:nth-child(2) { animation-delay: 1s; }
+  .floating-bubble:nth-child(3) { animation-delay: 2s; }
+  .floating-bubble:nth-child(4) { animation-delay: 0.5s; }
+  
+  .message-enter {
+    animation: messageSlide 400ms ease-out forwards;
+  }
 }
 
 .loading-dots {
@@ -95,14 +97,19 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(40px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes messageSlide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33% { transform: translateY(-15px) rotate(90deg); }
-  66% { transform: translateY(8px) rotate(180deg); }
+  33% { transform: translateY(-10px) rotate(45deg); }
+  66% { transform: translateY(5px) rotate(90deg); }
 }
 
 /* Remove any default margins/padding */

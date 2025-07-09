@@ -42,7 +42,7 @@ export default function MessageBubble({ message, isLoading = false }: MessageBub
           <div className={`px-4 py-3 rounded-2xl ${
             isUser 
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-              : 'bg-white/95 backdrop-blur-sm border border-gray-200/50 text-gray-900 shadow-md'
+              : 'bg-slate-800 border border-slate-700 text-slate-100 shadow-md'
           }`}>
             <p className="text-sm leading-relaxed whitespace-pre-wrap">
               {isLoading ? (
@@ -54,7 +54,7 @@ export default function MessageBubble({ message, isLoading = false }: MessageBub
           </div>
           
           {/* Timestamp */}
-          <div className={`mt-1 text-xs text-gray-500 ${isUser ? 'text-right' : 'text-left'}`}>
+          <div className={`mt-1 text-xs text-slate-500 ${isUser ? 'text-right' : 'text-left'}`}>
             {message.timestamp.toLocaleTimeString([], { 
               hour: '2-digit', 
               minute: '2-digit' 
