@@ -40,7 +40,7 @@ export default function ChatInput({ onSubmit, disabled = false }: ChatInputProps
           placeholder="Tell me about your tastes... (food, music, travel, etc.)"
           disabled={disabled}
           rows={1}
-          className="taste-input resize-none min-h-[48px] max-h-32 pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="taste-input resize-none min-h-[48px] max-h-32 pr-12 disabled:opacity-50 disabled:cursor-not-allowed bg-white/95 backdrop-blur-sm"
           style={{
             height: 'auto',
             minHeight: '48px',
@@ -53,7 +53,7 @@ export default function ChatInput({ onSubmit, disabled = false }: ChatInputProps
         />
         <button
           type="button"
-          className="absolute right-3 bottom-3 p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute right-3 bottom-3 p-1.5 text-gray-400 hover:text-gray-600 transition-all duration-300 ease-in-out hover:scale-110"
           disabled={disabled}
         >
           <Mic className="w-4 h-4" />
@@ -63,7 +63,7 @@ export default function ChatInput({ onSubmit, disabled = false }: ChatInputProps
       <button
         type="submit"
         disabled={disabled || !input.trim()}
-        className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 min-w-[100px] justify-center"
+        className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 min-w-[100px] justify-center shadow-lg"
       >
         {disabled ? (
           <div className="loading-dots">Thinking</div>

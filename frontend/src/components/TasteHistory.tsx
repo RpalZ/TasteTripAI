@@ -69,9 +69,9 @@ export default function TasteHistory() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white/95 backdrop-blur-md">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200/50">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Taste History</h2>
         
         {/* Search */}
@@ -82,7 +82,7 @@ export default function TasteHistory() {
             placeholder="Search your tastes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300 ease-in-out bg-white/90"
           />
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function TasteHistory() {
           filteredHistory.map((entry) => (
             <div
               key={entry.id}
-              className="group p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all cursor-pointer"
+              className="group p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all duration-300 ease-in-out cursor-pointer hover:scale-105"
               onClick={() => handleRequery(entry)}
             >
               {/* Category & Time */}
@@ -127,7 +127,7 @@ export default function TasteHistory() {
                     e.stopPropagation()
                     handleRequery(entry)
                   }}
-                  className="btn-secondary flex items-center space-x-1 text-xs"
+                  className="btn-secondary flex items-center space-x-1 text-xs shadow-sm"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>Re-query</span>
@@ -138,7 +138,7 @@ export default function TasteHistory() {
                     e.stopPropagation()
                     // Handle delete
                   }}
-                  className="btn-secondary flex items-center space-x-1 text-xs text-red-600 hover:text-red-700"
+                  className="btn-secondary flex items-center space-x-1 text-xs text-red-600 hover:text-red-700 shadow-sm"
                 >
                   <Trash2 className="w-3 h-3" />
                   <span>Delete</span>
@@ -150,8 +150,8 @@ export default function TasteHistory() {
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
-        <button className="btn-secondary w-full">
+      <div className="p-4 border-t border-gray-200/50">
+        <button className="btn-secondary w-full shadow-sm">
           Clear All History
         </button>
       </div>
