@@ -65,6 +65,40 @@ GOOGLE_MAPS_API_KEY=
 - Builds a system prompt for GPT-4 to explain and format results
 - Returns both raw and formatted recommendations
 
+---
+
+#### [NEW, July 2024] Dynamic Entity Extraction & Qloo API Conformance
+> **Enhancement:** The `/api/recommend` endpoint now uses GPT-4 to dynamically extract the most relevant Qloo entity type (e.g., Movie, Book, Artist, etc.) and canonical entity names from user input and similar tastes. These names are resolved to Qloo entity IDs using the Qloo Search API. The backend then sets `filter.type` and `signal.interests.entities` dynamically in the Qloo API call, ensuring full API conformance and supporting all Qloo entity types.
+>
+> - If no valid entity IDs are found, a 400 error is returned.
+> - This logic is implemented in `openaiService.js` and `qlooService.js`.
+> - This enhancement is backward compatible: if the input is already a canonical entity name, it will be used as-is.
+>
+> **Example:**
+> 1. User input: "I love time travel movies like Inception and Interstellar."
+> 2. GPT-4 extracts:
+>    ```json
+>    {
+>      "entity_type": "Movie",
+>      "entity_names": ["Inception", "Interstellar"]
+>    }
+>    ```
+> 3. The backend resolves these names to Qloo entity IDs (e.g., `urn:entity:movie:inception`, ...).
+> 4. The Qloo API is called with:
+>    - `filter.type = urn:entity:movie`
+>    - `signal.interests.entities = <comma-separated entity IDs>`
+> 5. Recommendations and a GPT-4 explanation are returned.
+>
+> **Error Handling:**
+> - If no valid Qloo entity IDs are found, returns:
+>   ```
+>   {
+>     "error": "No valid Qloo entity IDs found for input."
+>   }
+>   ```
+
+---
+
 ### 4. POST `/api/booking`
 **Purpose:** Use Google Maps API to locate/book cultural landmarks
 - **Input:** `{ query: "restaurants in Doha that match Italian jazz vibe" }`

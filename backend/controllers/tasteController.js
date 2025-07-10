@@ -20,7 +20,7 @@ exports.createTaste = async (req, res) => {
         {
           input,
           embedding,
-          timestamp: new Date().toISOString(),
+          
         },
       ])
       .select('id');
