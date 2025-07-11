@@ -1,4 +1,4 @@
-@reference "tailwindcss";
+@import "tailwindcss";
 
 @tailwind base;
 @tailwind components;
@@ -29,19 +29,19 @@
   }
   
   .recommendation-card {
-    @apply bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100 hover:scale-105;
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-100 dark:border-gray-700 hover:scale-105;
   }
   
   .taste-input {
-    @apply w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out;
+    @apply w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out bg-white dark:bg-gray-800 text-gray-900 dark:text-white;
   }
   
   .btn-primary {
-    @apply bg-sky-500 text-white px-6 py-3 rounded-2xl font-medium hover:bg-sky-600 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg hover:scale-105;
+    @apply bg-sky-500 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-sky-600 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105 border-0;
   }
   
   .btn-secondary {
-    @apply bg-white text-gray-700 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-300 ease-in-out hover:scale-105;
+    @apply bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 ease-in-out hover:scale-105;
   }
   
   .page-transition {
@@ -84,12 +84,8 @@
     @apply bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100 hover:border-sky-200 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg;
   }
   
-  .hero-gradient {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 50%, #f0fdf4 100%);
-  }
-  
-  .section-gradient {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  .scroll-section {
+    @apply relative;
   }
 }
 
@@ -157,4 +153,17 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #6b7280;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }

@@ -89,14 +89,14 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 pt-16 bg-sky-50">
+    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 pt-16 bg-white">
       {/* Background Landmarks Carousel */}
       <div className="absolute inset-0 z-0">
         {landmarks.map((landmark, index) => (
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-2000 ease-in-out ${
-              index === currentLandmark ? 'opacity-20' : 'opacity-0'
+              index === currentLandmark ? 'opacity-10' : 'opacity-0'
             }`}
             style={{
               backgroundImage: `url(${landmark})`,
@@ -106,8 +106,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
           />
         ))}
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-sky-50/80" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-white/90" />
       </div>
 
       {/* Main Content */}
@@ -129,34 +128,14 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
               </p>
             </div>
 
-            {/* Info Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-12 slide-up stagger-1">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100">
-                <MapPin className="w-8 h-8 text-sky-500 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-gray-900 mb-1">50K+</div>
-                <div className="text-gray-600 text-sm">Cultural Spots</div>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100">
-                <Globe className="w-8 h-8 text-lavender-500 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-gray-900 mb-1">120+</div>
-                <div className="text-gray-600 text-sm">Countries</div>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100">
-                <Zap className="w-8 h-8 text-mint-500 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-gray-900 mb-1">AI</div>
-                <div className="text-gray-600 text-sm">Powered</div>
-              </div>
-            </div>
-
             {/* Search Input */}
-            <div className="mb-12 slide-up stagger-2">
+            <div className="mb-12 slide-up stagger-1">
               <div 
                 className={`relative max-w-2xl mx-auto transition-all duration-500 ease-in-out ${
                   searchFocused ? 'scale-102' : 'scale-100'
                 }`}
               >
-                <div className="absolute inset-0 bg-sky-500/20 rounded-3xl blur-lg opacity-30" />
-                <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl p-2 shadow-2xl">
+                <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl p-2 shadow-2xl border border-gray-100">
                   <div className="flex items-center">
                     <Search className="w-6 h-6 text-gray-400 ml-6" />
                     <input
@@ -179,23 +158,13 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                 </div>
               </div>
             </div>
-
-            {/* Bold CTA Button */}
-            <div className="mb-16 slide-up stagger-3">
-              <button
-                onClick={handleSearchClick}
-                className="bg-sky-500 hover:bg-sky-600 text-white px-12 py-6 rounded-3xl text-xl font-bold transition-all duration-300 ease-in-out shadow-2xl hover:shadow-3xl hover:scale-110 border-2 border-white/20"
-              >
-                Start Your Cultural Journey
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Travel Ideas Section */}
         <div className="px-6 pb-12">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8 slide-up stagger-4">
+            <div className="text-center mb-8 slide-up stagger-2">
               <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
                 Popular Cultural Experiences
               </h3>
@@ -209,11 +178,8 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                 <button
                   key={idea.id}
                   onClick={() => handleTravelIdeaClick(idea)}
-                  className={`group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 ease-in-out border border-gray-100 hover:border-sky-200 hover:scale-105 slide-up stagger-${index + 5}`}
+                  className={`group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 ease-in-out border border-gray-100 hover:border-sky-200 hover:scale-105 slide-up stagger-${index + 3}`}
                 >
-                  {/* Gradient Background */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${idea.gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`} />
-                  
                   <div className="relative">
                     <div className="text-4xl mb-3">{idea.emoji}</div>
                     <h4 className="text-xl font-semibold text-gray-900 mb-2">
@@ -238,21 +204,12 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         {/* Bottom CTA */}
         <div className="px-6 pb-8">
           <div className="max-w-4xl mx-auto text-center slide-up stagger-6">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-100">
-              <Users className="w-12 h-12 text-sky-500 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold text-gray-900 mb-3">
-                Ready to Discover?
-              </h4>
-              <p className="text-gray-600 mb-6">
-                Join thousands of cultural explorers finding their perfect experiences
-              </p>
-              <button
-                onClick={handleSearchClick}
-                className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
-              >
-                Start Your Journey
-              </button>
-            </div>
+            <button
+              onClick={handleSearchClick}
+              className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
+            >
+              Start Your Journey
+            </button>
           </div>
         </div>
       </div>
