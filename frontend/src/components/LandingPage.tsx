@@ -38,7 +38,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               onClick={onGetStarted}
               className="btn-primary"
             >
-              Get Started
+              Sign In
             </button>
           </div>
         </div>
