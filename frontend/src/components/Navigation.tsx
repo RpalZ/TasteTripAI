@@ -4,7 +4,7 @@ import { Sparkles, Compass, Search, BarChart3, LogOut, User } from 'lucide-react
 
 interface NavigationProps {
   isAuthenticated: boolean
-  onNavigate: (page: 'auth' | 'landing' | 'chat' | 'dashboard') => void
+  onNavigate: (page: 'landing' | 'auth' | 'home' | 'chat' | 'dashboard') => void
   onLogout: () => void
   currentPage: string
 }
@@ -13,27 +13,27 @@ export default function Navigation({ isAuthenticated, onNavigate, onLogout, curr
   if (!isAuthenticated) return null
 
   return (
-    <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-lg">
+    <nav className="sticky top-0 z-50 bg-white/95 navbar-blur border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">TasteTrip AI</h1>
+              <h1 className="text-xl font-bold text-gray-900">TasteTrip AI</h1>
             </div>
           </div>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             <button
-              onClick={() => onNavigate('landing')}
+              onClick={() => onNavigate('home')}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-                currentPage === 'landing' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white hover:bg-slate-800'
+                currentPage === 'home' 
+                  ? 'bg-sky-500 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <Compass className="w-4 h-4" />
@@ -44,8 +44,8 @@ export default function Navigation({ isAuthenticated, onNavigate, onLogout, curr
               onClick={() => onNavigate('chat')}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
                 currentPage === 'chat' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white hover:bg-slate-800'
+                  ? 'bg-sky-500 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <Search className="w-4 h-4" />
@@ -56,8 +56,8 @@ export default function Navigation({ isAuthenticated, onNavigate, onLogout, curr
               onClick={() => onNavigate('dashboard')}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
                 currentPage === 'dashboard' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white hover:bg-slate-800'
+                  ? 'bg-sky-500 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <BarChart3 className="w-4 h-4" />
@@ -67,14 +67,14 @@ export default function Navigation({ isAuthenticated, onNavigate, onLogout, curr
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            <div className="hidden sm:flex items-center space-x-2 text-gray-300">
+            <div className="hidden sm:flex items-center space-x-2 text-gray-600">
               <User className="w-4 h-4" />
               <span className="text-sm">Welcome back!</span>
             </div>
             
             <button
               onClick={onLogout}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300 hover:scale-105"
+              className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-300 hover:scale-105"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Logout</span>
@@ -83,7 +83,7 @@ export default function Navigation({ isAuthenticated, onNavigate, onLogout, curr
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button className="text-gray-300 hover:text-white p-2">
+            <button className="text-gray-600 hover:text-gray-900 p-2">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>

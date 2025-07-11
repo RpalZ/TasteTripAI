@@ -40,7 +40,7 @@ export default function ChatInput({ onSubmit, disabled = false }: ChatInputProps
           placeholder="Tell me about your tastes... (food, music, travel, etc.)"
           disabled={disabled}
           rows={1}
-          className="w-full px-4 py-3 rounded-2xl border border-slate-600 bg-slate-700 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-300 ease-in-out resize-none min-h-[48px] max-h-32 pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out resize-none min-h-[48px] max-h-32 pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             height: 'auto',
             minHeight: '48px',
@@ -53,7 +53,7 @@ export default function ChatInput({ onSubmit, disabled = false }: ChatInputProps
         />
         <button
           type="button"
-          className="absolute right-3 bottom-3 p-1.5 text-slate-400 hover:text-slate-300 transition-all duration-300 ease-in-out hover:scale-110"
+          className="absolute right-3 bottom-3 p-1.5 text-gray-400 hover:text-gray-600 transition-all duration-300 ease-in-out hover:scale-110"
           disabled={disabled}
         >
           <Mic className="w-4 h-4" />

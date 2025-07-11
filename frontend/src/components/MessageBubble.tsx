@@ -27,8 +27,8 @@ export default function MessageBubble({ message, isLoading = false }: MessageBub
         {/* Avatar */}
         <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center ${
           isUser 
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600' 
-            : 'bg-gradient-to-r from-emerald-500 to-teal-600'
+            ? 'bg-sky-500' 
+            : 'bg-mint-500'
         }`}>
           {isUser ? (
             <User className="w-5 h-5 text-white" />
@@ -41,8 +41,8 @@ export default function MessageBubble({ message, isLoading = false }: MessageBub
         <div className={`chat-bubble ${isUser ? 'ml-3' : 'mr-3'}`}>
           <div className={`px-4 py-3 rounded-2xl ${
             isUser 
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-              : 'bg-slate-800 border border-slate-700 text-slate-100 shadow-md'
+              ? 'bg-sky-500 text-white shadow-lg' 
+              : 'bg-white border border-gray-100 text-gray-900 shadow-md'
           }`}>
             <p className="text-sm leading-relaxed whitespace-pre-wrap">
               {isLoading ? (
@@ -54,7 +54,7 @@ export default function MessageBubble({ message, isLoading = false }: MessageBub
           </div>
           
           {/* Timestamp */}
-          <div className={`mt-1 text-xs text-slate-500 ${isUser ? 'text-right' : 'text-left'}`}>
+          <div className={`mt-1 text-xs text-gray-500 ${isUser ? 'text-right' : 'text-left'}`}>
             {message.timestamp.toLocaleTimeString([], { 
               hour: '2-digit', 
               minute: '2-digit' 
