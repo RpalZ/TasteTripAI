@@ -24,6 +24,16 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'tastes' | 'saved' | 'profile'>('tastes')
   const [darkMode, setDarkMode] = useState(false)
 
+  // Toggle dark mode for entire website
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+    if (!darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
+
   // Mock data
   const tasteSummaries: TasteSummary[] = [
     {
@@ -113,9 +123,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={`min-h-screen pt-16 p-6 transition-colors duration-300 ${
-      darkMode ? 'dark bg-gray-900' : 'bg-white'
-    }`}>
+    <div className="min-h-screen pt-16 p-6 transition-colors duration-300 bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -305,7 +313,7 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Dark Mode</span>
                         <button 
-                          onClick={() => setDarkMode(!darkMode)}
+                          onClick={toggleDarkMode}
                           className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
                             darkMode ? 'bg-sky-500' : 'bg-gray-300'
                           }`}

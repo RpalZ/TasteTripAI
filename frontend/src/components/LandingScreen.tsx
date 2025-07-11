@@ -15,6 +15,75 @@ interface LandingScreenProps {
   onStartChat: () => void
 }
 
+const travelDestinations = [
+  {
+    id: '1',
+    title: 'Jazz in Tokyo',
+    subtitle: 'Jazz cafés & sushi in Tokyo',
+    location: 'Tokyo, Japan',
+    popularity: '3,200+ travelers',
+    rating: 4.8,
+    emoji: '🎷',
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+    gradient: 'from-lavender-500 to-sky-500'
+  },
+  {
+    id: '2',
+    title: 'Cuisine in Rome',
+    subtitle: 'Authentic trattorias & wine',
+    location: 'Rome, Italy',
+    popularity: '4,800+ travelers',
+    rating: 4.9,
+    emoji: '🍝',
+    image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=600&fit=crop',
+    gradient: 'from-orange-400 to-red-400'
+  },
+  {
+    id: '3',
+    title: 'Art in Barcelona',
+    subtitle: 'Galleries & street culture',
+    location: 'Barcelona, Spain',
+    popularity: '2,900+ travelers',
+    rating: 4.7,
+    emoji: '🎨',
+    image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&h=600&fit=crop',
+    gradient: 'from-sky-500 to-lavender-500'
+  },
+  {
+    id: '4',
+    title: 'Markets in Marrakech',
+    subtitle: 'Spices & handcrafted goods',
+    location: 'Marrakech, Morocco',
+    popularity: '1,800+ travelers',
+    rating: 4.6,
+    emoji: '🏺',
+    image: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?w=800&h=600&fit=crop',
+    gradient: 'from-yellow-400 to-orange-400'
+  },
+  {
+    id: '5',
+    title: 'Music in Nashville',
+    subtitle: 'Live venues & local sounds',
+    location: 'Nashville, USA',
+    popularity: '2,400+ travelers',
+    rating: 4.5,
+    emoji: '🎸',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop',
+    gradient: 'from-mint-500 to-sky-500'
+  },
+  {
+    id: '6',
+    title: 'Fashion in Milan',
+    subtitle: 'Boutiques & design studios',
+    location: 'Milan, Italy',
+    popularity: '3,600+ travelers',
+    rating: 4.8,
+    emoji: '👗',
+    image: 'https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=800&h=600&fit=crop',
+    gradient: 'from-lavender-500 to-mint-500'
+  }
+]
+
 const landmarks = [
   'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1920&h=1080&fit=crop', // London
   'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=1920&h=1080&fit=crop', // Paris
@@ -81,11 +150,30 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
   }, [])
 
   const handleSearchClick = () => {
+    // Scroll to center the chat component in viewport
+    setTimeout(() => {
+      const chatSection = document.getElementById('chat-section')
+      if (chatSection) {
+        const navbarHeight = 64 // Height of sticky navbar
+        const elementTop = chatSection.offsetTop
+        const elementHeight = chatSection.offsetHeight
+        const windowHeight = window.innerHeight
+        const scrollTo = elementTop - navbarHeight - (windowHeight - elementHeight) / 2
+        
+        window.scrollTo({
+          top: Math.max(0, scrollTo),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
     onStartChat()
   }
 
-  const handleTravelIdeaClick = (idea: TravelIdea) => {
+  const handleTravelIdeaClick = (destination: typeof travelDestinations[0]) => {
+    // Pre-fill chat with trip planning message
     onStartChat()
+    // Note: In a real implementation, you'd pass this message to the chat component
+    console.log(`Plan me a trip like this: ${destination.subtitle} in ${destination.location}`)
   }
 
   return (
@@ -129,7 +217,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
             </div>
 
             {/* Search Input */}
-            <div className="mb-12 slide-up stagger-1">
+            <div id="chat-section" className="mb-12 slide-up stagger-1">
               <div 
                 className={`relative max-w-2xl mx-auto transition-all duration-500 ease-in-out ${
                   searchFocused ? 'scale-102' : 'scale-100'
@@ -166,33 +254,64 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8 slide-up stagger-2">
               <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                Popular Cultural Experiences
+                Popular Cultural Destinations
               </h3>
               <p className="text-gray-600">
-                Get inspired by these curated cultural journeys
+                Get inspired by these curated cultural journeys from real travelers
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {travelIdeas.map((idea, index) => (
+              {travelDestinations.map((destination, index) => (
                 <button
-                  key={idea.id}
-                  onClick={() => handleTravelIdeaClick(idea)}
-                  className={`group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/90 transition-all duration-300 ease-in-out border border-gray-100 hover:border-sky-200 hover:scale-105 slide-up stagger-${index + 3}`}
+                  key={destination.id}
+                  onClick={() => handleTravelIdeaClick(destination)}
+                  className={`group relative bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white transition-all duration-300 ease-in-out border border-gray-100 hover:border-sky-200 hover:scale-105 slide-up stagger-${index + 3} shadow-lg hover:shadow-xl`}
                 >
-                  <div className="relative">
-                    <div className="text-4xl mb-3">{idea.emoji}</div>
-                    <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                      {idea.title}
-                    </h4>
-                    <p className="text-gray-600 text-sm mb-4">
-                      {idea.subtitle}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 uppercase tracking-wide">
-                        Explore
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform duration-300" />
+                  {/* Destination Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={destination.image} 
+                      alt={destination.location}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <span className="text-3xl">{destination.emoji}</span>
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <div className="flex items-center space-x-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
+                        <span className="text-yellow-400 text-sm">★</span>
+                        <span className="text-xs font-medium text-gray-900">{destination.rating}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="mb-3">
+                      <h4 className="text-xl font-semibold text-gray-900 mb-1">
+                        {destination.title}
+                      </h4>
+                      <p className="text-gray-600 text-sm mb-2">
+                        {destination.subtitle}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        📍 {destination.location}
+                      </p>
+                    </div>
+                    
+                    {/* Popularity */}
+                    <div className="mb-4">
+                      <p className="text-xs text-sky-600 font-medium">
+                        Used by {destination.popularity}
+                      </p>
+                    </div>
+                    
+                    {/* CTA Button */}
+                    <div className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2 group-hover:scale-105">
+                      <span>Start with this trip</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -214,5 +333,3 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         </div>
       </div>
     </div>
-  )
-}
