@@ -27,7 +27,7 @@ function requireAuth(req, res, next) {
   }
 }
 
-app.use('/api', requireAuth);
+// app.use('/api', requireAuth);
 
 app.use('/api/taste', tasteRoutes);
 app.use('/api/recommend', recommendationRoutes);

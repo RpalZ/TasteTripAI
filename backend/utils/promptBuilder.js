@@ -3,14 +3,27 @@
  * @param {string} userInput - The original user taste input
  * @param {string[]} similarEntries - Array of similar taste strings
  * @param {Object[]} qlooResults - Raw Qloo recommendations
+ * @param {string} entityType - The type of cultural entity (e.g., 'food', 'travel', 'music', 'fashion')
  * @returns {string} - The prompt for GPT
  */
-function buildRecommendationPrompt(userInput, similarEntries, qlooResults) {
-  return `The user has a taste for: ${userInput}.
-They previously liked: ${similarEntries.join(', ')}.
-Qloo recommends: ${qlooResults.map(r => r.title).join(', ')}.
+function buildRecommendationPrompt(userInput, similarEntries, qlooResults, entityType) {
+  // Prepare context strings
+  const similarStr = similarEntries && similarEntries.length
+    ? `They previously liked: ${similarEntries.join(', ')}.`
+    : '';
+  const qlooStr = qlooResults && qlooResults.length
+    ? `Qloo recommends:\n${qlooResults.map(r => `- name: ${r.name}, country:${r.properties?.geocode?.country}, geohash: ${r.location?.geohash}, lat: ${r.location?.lat}, lng: ${r.location?.lon}, address: ${r.properties?.address}`).join('\n')}`
+    : '';
+  const entityTypeStr = entityType ? `The relevant cultural domain is: ${entityType}.` : '';
 
-Recommend cultural experiences across food, travel, music, or fashion that align with these preferences. For each, provide a title, type, description, location, and (if available) lat/lng.`;
+  // Compose the prompt
+  // console.log('qlooStr', qlooStr);
+  return `The user has a taste for: ${userInput}.
+${similarStr}
+${qlooStr}
+${entityTypeStr}
+
+Based on this, write a personalized, engaging description for each recommendation, explaining why it is a great fit for the user. Output your response as a JSON array of natural language strings, one for each recommendation, in the same order as the Qloo list e.g { "recommendations": ["recommendation1", "recommendation2", "recommendation3"] }.`;
 }
 
 module.exports = { buildRecommendationPrompt };
