@@ -12,7 +12,7 @@ function buildRecommendationPrompt(userInput, similarEntries, qlooResults, entit
     ? `They previously liked: ${similarEntries.join(', ')}.`
     : '';
   const qlooStr = qlooResults && qlooResults.length
-    ? `Qloo recommends:\n${qlooResults.map(r => `- name: ${r.name}, country:${r.properties?.geocode?.country}, geohash: ${r.location?.geohash}, lat: ${r.location?.lat}, lng: ${r.location?.lon}`).join('\n')}`
+    ? `Qloo recommends:\n${qlooResults.map(r => `- name: ${r.name}, country:${r.properties?.geocode?.country}, geohash: ${r.location?.geohash}, lat: ${r.location?.lat}, lng: ${r.location?.lon}, address: ${r.properties?.address}`).join('\n')}`
     : '';
   const entityTypeStr = entityType ? `The relevant cultural domain is: ${entityType}.` : '';
 

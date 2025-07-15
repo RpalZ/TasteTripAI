@@ -99,32 +99,38 @@ GOOGLE_MAPS_API_KEY=
 
 ---
 
-### 4. POST `/api/booking`
-**Purpose:** Use Google Maps API to locate/book cultural landmarks
-- **Input:** `{ query: "restaurants in Doha that match Italian jazz vibe" }`
+### 4. POST `/api/booking` **(DEPRECATED)**
+**Purpose:** (Deprecated) Previously generated a Google Maps link for a given location for booking/map display.
+
+> **DEPRECATED:** Booking should now be handled directly on the frontend using Supabase. This endpoint is no longer required unless backend logic (e.g., third-party API integration, privileged actions) is needed in the future.
+
+- **Input:**
+  - `{ lat: number, lon: number, name?: string, address?: string, description?: string }`
+  - (Optionally, accepts an array: `{ locations: [{ lat, lon, name?, address?, description? }, ...] }` for batch support)
 - **Logic:**
-  - Calls Google Maps Places API with the query
-  - Returns real-world Google Maps results (place ID, location, link, etc)
+  - Validates that `lat` and `lon` are present and within valid ranges.
+  - Returns a Google Maps link for the provided coordinates.
+  - Echoes back any provided metadata (name, address, description) for frontend display.
+  - (If batch: returns an array of results.)
 - **Returns:**
 ```
 {
-  "results": [
-    {
-      "place_id": "ChIJN1t_tDeuEmsRUsoyG83frY4",
-      "name": "Napoli Ristorante",
-      "address": "123 Main St, Doha, Qatar",
-      "location": { "lat": 25.276987, "lng": 51.520008 },
-      "link": "https://www.google.com/maps/place/?q=place_id:ChIJN1t_tDeuEmsRUsoyG83frY4",
-      "types": ["restaurant", "food"],
-      "rating": 4.5
-    }
-  ]
+  name: "Al Wakrah Old Souq",
+  address: "Al Wakra Rd Al Wakrah Qatar",
+  description: "Set on a public beach, this longtime market has a variety of local vendors & cafes with global fare.",
+  lat: 25.169367,
+  lon: 51.61019,
+  google_maps_link: "https://www.google.com/maps/search/?api=1&query=25.169367,51.61019"
 }
 ```
+- **Note:**
+  - The backend does not call Google Maps or Qloo APIs for this endpoint.
+  - The frontend is responsible for embedding the map and handling interactivity using the provided link and coordinates.
 
-#### Google Maps Workflow
-- Calls Google Maps Places API with the user query
-- Formats and returns place results with IDs, locations, and direct map links
+#### Booking Workflow (Deprecated)
+- The frontend sends the selected place's coordinates (and optional metadata) to the backend.
+- The backend validates and returns a Google Maps link for display or booking purposes.
+- **Now recommended:** The frontend should handle booking logic and data storage directly with Supabase.
 
 ## Next Steps
 - Implement `/api/recommend` and `/api/booking` endpoints
