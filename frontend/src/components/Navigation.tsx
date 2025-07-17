@@ -1,15 +1,17 @@
 'use client'
 
 import { Sparkles, Compass, Search, BarChart3, LogOut, User } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface NavigationProps {
   isAuthenticated: boolean
-  onNavigate: (page: 'landing' | 'auth' | 'home' | 'chat' | 'dashboard') => void
   onLogout: () => void
-  currentPage: string
+  currentPage?: string // optional, for legacy support
 }
 
-export default function Navigation({ isAuthenticated, onNavigate, onLogout, currentPage }: NavigationProps) {
+export default function Navigation({ isAuthenticated, onLogout }: NavigationProps) {
+  const pathname = usePathname()
   if (!isAuthenticated) return null
 
   return (
@@ -28,41 +30,41 @@ export default function Navigation({ isAuthenticated, onNavigate, onLogout, curr
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => onNavigate('home')}
+            <Link
+              href="/home"
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-                currentPage === 'home' 
+                pathname === '/home' 
                   ? 'bg-sky-500 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <Compass className="w-4 h-4" />
               <span>Explore</span>
-            </button>
+            </Link>
             
-            <button
-              onClick={() => onNavigate('chat')}
+            <Link
+              href="/chat"
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-                currentPage === 'chat' 
+                pathname === '/chat' 
                   ? 'bg-sky-500 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <Search className="w-4 h-4" />
               <span>Discover</span>
-            </button>
+            </Link>
             
-            <button
-              onClick={() => onNavigate('dashboard')}
+            <Link
+              href="/dashboard"
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-                currentPage === 'dashboard' 
+                pathname === '/dashboard' 
                   ? 'bg-sky-500 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <BarChart3 className="w-4 h-4" />
               <span>Dashboard</span>
-            </button>
+            </Link>
           </div>
 
           {/* User Actions */}
