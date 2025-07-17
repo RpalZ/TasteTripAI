@@ -15,6 +15,75 @@ interface LandingScreenProps {
   onStartChat: () => void
 }
 
+const travelDestinations = [
+  {
+    id: '1',
+    title: 'Jazz in Tokyo',
+    subtitle: 'Jazz cafés & sushi in Tokyo',
+    location: 'Tokyo, Japan',
+    popularity: '3,200+ travelers',
+    rating: 4.8,
+    emoji: '🎷',
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop',
+    gradient: 'from-lavender-500 to-sky-500'
+  },
+  {
+    id: '2',
+    title: 'Cuisine in Rome',
+    subtitle: 'Authentic trattorias & wine',
+    location: 'Rome, Italy',
+    popularity: '4,800+ travelers',
+    rating: 4.9,
+    emoji: '🍝',
+    image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=600&fit=crop',
+    gradient: 'from-orange-400 to-red-400'
+  },
+  {
+    id: '3',
+    title: 'Art in Barcelona',
+    subtitle: 'Galleries & street culture',
+    location: 'Barcelona, Spain',
+    popularity: '2,900+ travelers',
+    rating: 4.7,
+    emoji: '🎨',
+    image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&h=600&fit=crop',
+    gradient: 'from-sky-500 to-lavender-500'
+  },
+  {
+    id: '4',
+    title: 'Markets in Marrakech',
+    subtitle: 'Spices & handcrafted goods',
+    location: 'Marrakech, Morocco',
+    popularity: '1,800+ travelers',
+    rating: 4.6,
+    emoji: '🏺',
+    image: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?w=800&h=600&fit=crop',
+    gradient: 'from-yellow-400 to-orange-400'
+  },
+  {
+    id: '5',
+    title: 'Music in Nashville',
+    subtitle: 'Live venues & local sounds',
+    location: 'Nashville, USA',
+    popularity: '2,400+ travelers',
+    rating: 4.5,
+    emoji: '🎸',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop',
+    gradient: 'from-mint-500 to-sky-500'
+  },
+  {
+    id: '6',
+    title: 'Fashion in Milan',
+    subtitle: 'Boutiques & design studios',
+    location: 'Milan, Italy',
+    popularity: '3,600+ travelers',
+    rating: 4.8,
+    emoji: '👗',
+    image: 'https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=800&h=600&fit=crop',
+    gradient: 'from-lavender-500 to-mint-500'
+  }
+]
+
 const landmarks = [
   'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1920&h=1080&fit=crop', // London
   'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=1920&h=1080&fit=crop', // Paris
@@ -29,42 +98,42 @@ const travelIdeas: TravelIdea[] = [
     title: 'Jazz in Tokyo',
     subtitle: 'Intimate venues & sake bars',
     emoji: '🎷',
-    gradient: 'from-purple-500 to-pink-500'
+    gradient: 'from-lavender-500 to-sky-500'
   },
   {
     id: '2',
     title: 'Cuisine in Rome',
     subtitle: 'Authentic trattorias & wine',
     emoji: '🍝',
-    gradient: 'from-orange-500 to-red-500'
+    gradient: 'from-orange-400 to-red-400'
   },
   {
     id: '3',
     title: 'Art in Barcelona',
     subtitle: 'Galleries & street culture',
     emoji: '🎨',
-    gradient: 'from-blue-500 to-purple-500'
+    gradient: 'from-sky-500 to-lavender-500'
   },
   {
     id: '4',
     title: 'Markets in Marrakech',
     subtitle: 'Spices & handcrafted goods',
     emoji: '🏺',
-    gradient: 'from-yellow-500 to-orange-500'
+    gradient: 'from-yellow-400 to-orange-400'
   },
   {
     id: '5',
     title: 'Music in Nashville',
     subtitle: 'Live venues & local sounds',
     emoji: '🎸',
-    gradient: 'from-green-500 to-blue-500'
+    gradient: 'from-mint-500 to-sky-500'
   },
   {
     id: '6',
     title: 'Fashion in Milan',
     subtitle: 'Boutiques & design studios',
     emoji: '👗',
-    gradient: 'from-pink-500 to-purple-500'
+    gradient: 'from-lavender-500 to-mint-500'
   }
 ]
 
@@ -81,22 +150,41 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
   }, [])
 
   const handleSearchClick = () => {
+    // Scroll to center the chat component in viewport
+    setTimeout(() => {
+      const chatSection = document.getElementById('chat-section')
+      if (chatSection) {
+        const navbarHeight = 64 // Height of sticky navbar
+        const elementTop = chatSection.offsetTop
+        const elementHeight = chatSection.offsetHeight
+        const windowHeight = window.innerHeight
+        const scrollTo = elementTop - navbarHeight - (windowHeight - elementHeight) / 2
+        
+        window.scrollTo({
+          top: Math.max(0, scrollTo),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
     onStartChat()
   }
 
-  const handleTravelIdeaClick = (idea: TravelIdea) => {
+  const handleTravelIdeaClick = (destination: typeof travelDestinations[0]) => {
+    // Pre-fill chat with trip planning message
     onStartChat()
+    // Note: In a real implementation, you'd pass this message to the chat component
+    console.log(`Plan me a trip like this: ${destination.subtitle} in ${destination.location}`)
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 pt-16 bg-slate-900">
+    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 pt-16 bg-white">
       {/* Background Landmarks Carousel */}
       <div className="absolute inset-0 z-0">
         {landmarks.map((landmark, index) => (
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-2000 ease-in-out ${
-              index === currentLandmark ? 'opacity-20' : 'opacity-0'
+              index === currentLandmark ? 'opacity-10' : 'opacity-0'
             }`}
             style={{
               backgroundImage: `url(${landmark})`,
@@ -106,8 +194,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
           />
         ))}
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-blue-900/40 to-purple-900/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-white/90" />
       </div>
 
       {/* Main Content */}
@@ -117,46 +204,26 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
           <div className="max-w-4xl mx-auto text-center">
             {/* Main Headline */}
             <div className="mb-8 slide-up">
-              <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+              <h2 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                 Discover Your
-                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <span className="text-sky-500">
                   {' '}Perfect{' '}
                 </span>
                 Cultural Journey
               </h2>
-              <p className="text-xl md:text-2xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8">
+              <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
                 AI-powered recommendations for food, music, art, and travel experiences tailored to your unique taste
               </p>
             </div>
 
-            {/* Info Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-12 slide-up stagger-1">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <MapPin className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white mb-1">50K+</div>
-                <div className="text-slate-300 text-sm">Cultural Spots</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <Globe className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white mb-1">120+</div>
-                <div className="text-slate-300 text-sm">Countries</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <Zap className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white mb-1">AI</div>
-                <div className="text-slate-300 text-sm">Powered</div>
-              </div>
-            </div>
-
             {/* Search Input */}
-            <div className="mb-12 slide-up stagger-2">
+            <div id="chat-section" className="mb-12 slide-up stagger-1">
               <div 
                 className={`relative max-w-2xl mx-auto transition-all duration-500 ease-in-out ${
                   searchFocused ? 'scale-102' : 'scale-100'
                 }`}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur-lg opacity-30" />
-                <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl p-2 shadow-2xl">
+                <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl p-2 shadow-2xl border border-gray-100">
                   <div className="flex items-center">
                     <Search className="w-6 h-6 text-gray-400 ml-6" />
                     <input
@@ -170,7 +237,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                     />
                     <button
                       onClick={handleSearchClick}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
+                      className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
                     >
                       <span>Explore</span>
                       <ArrowRight className="w-5 h-5" />
@@ -179,54 +246,72 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                 </div>
               </div>
             </div>
-
-            {/* Bold CTA Button */}
-            <div className="mb-16 slide-up stagger-3">
-              <button
-                onClick={handleSearchClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-3xl text-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out shadow-2xl hover:shadow-3xl hover:scale-110 border-2 border-white/20"
-              >
-                Start Your Cultural Journey
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Travel Ideas Section */}
         <div className="px-6 pb-12">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8 slide-up stagger-4">
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                Popular Cultural Experiences
+            <div className="text-center mb-8 slide-up stagger-2">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                Popular Cultural Destinations
               </h3>
-              <p className="text-slate-300">
-                Get inspired by these curated cultural journeys
+              <p className="text-gray-600">
+                Get inspired by these curated cultural journeys from real travelers
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {travelIdeas.map((idea, index) => (
+              {travelDestinations.map((destination, index) => (
                 <button
-                  key={idea.id}
-                  onClick={() => handleTravelIdeaClick(idea)}
-                  className={`group relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 ease-in-out border border-white/20 hover:border-white/30 hover:scale-105 slide-up stagger-${index + 5}`}
+                  key={destination.id}
+                  onClick={() => handleTravelIdeaClick(destination)}
+                  className={`group relative bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white transition-all duration-300 ease-in-out border border-gray-100 hover:border-sky-200 hover:scale-105 slide-up stagger-${index + 3} shadow-lg hover:shadow-xl`}
                 >
-                  {/* Gradient Background */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${idea.gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`} />
+                  {/* Destination Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={destination.image} 
+                      alt={destination.location}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <span className="text-3xl">{destination.emoji}</span>
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <div className="flex items-center space-x-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
+                        <span className="text-yellow-400 text-sm">★</span>
+                        <span className="text-xs font-medium text-gray-900">{destination.rating}</span>
+                      </div>
+                    </div>
+                  </div>
                   
-                  <div className="relative">
-                    <div className="text-4xl mb-3">{idea.emoji}</div>
-                    <h4 className="text-xl font-semibold text-white mb-2">
-                      {idea.title}
-                    </h4>
-                    <p className="text-slate-300 text-sm mb-4">
-                      {idea.subtitle}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400 uppercase tracking-wide">
-                        Explore
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform duration-300" />
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="mb-3">
+                      <h4 className="text-xl font-semibold text-gray-900 mb-1">
+                        {destination.title}
+                      </h4>
+                      <p className="text-gray-600 text-sm mb-2">
+                        {destination.subtitle}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        📍 {destination.location}
+                      </p>
+                    </div>
+                    
+                    {/* Popularity */}
+                    <div className="mb-4">
+                      <p className="text-xs text-sky-600 font-medium">
+                        Used by {destination.popularity}
+                      </p>
+                    </div>
+                    
+                    {/* CTA Button */}
+                    <div className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2 group-hover:scale-105">
+                      <span>Start with this trip</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -238,21 +323,12 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         {/* Bottom CTA */}
         <div className="px-6 pb-8">
           <div className="max-w-4xl mx-auto text-center slide-up stagger-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <Users className="w-12 h-12 text-blue-300 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold text-white mb-3">
-                Ready to Discover?
-              </h4>
-              <p className="text-slate-300 mb-6">
-                Join thousands of cultural explorers finding their perfect experiences
-              </p>
-              <button
-                onClick={handleSearchClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
-              >
-                Start Your Journey
-              </button>
-            </div>
+            <button
+              onClick={handleSearchClick}
+              className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
+            >
+              Start Your Journey
+            </button>
           </div>
         </div>
       </div>

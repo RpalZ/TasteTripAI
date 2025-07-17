@@ -1,49 +1,56 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import LandingPage from '@/components/LandingPage'
 import AuthScreen from '@/components/AuthScreen'
 import LandingScreen from '@/components/LandingScreen'
 import ChatInterface from '@/components/ChatInterface'
 import Dashboard from '@/components/Dashboard'
 import Navigation from '@/components/Navigation'
 
-type AppState = 'auth' | 'landing' | 'chat' | 'dashboard'
+type AppState = 'landing' | 'auth' | 'home' | 'chat' | 'dashboard'
 
 export default function Home() {
-  const [appState, setAppState] = useState<AppState>('auth')
+  const [appState, setAppState] = useState<AppState>('landing')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const handleStateChange = async (newState: AppState) => {
     setIsTransitioning(true)
-    await new Promise(resolve => setTimeout(resolve, 150))
+    await new Promise(resolve => setTimeout(resolve, 300))
     setAppState(newState)
     await new Promise(resolve => setTimeout(resolve, 100))
     setIsTransitioning(false)
   }
 
+  const handleGetStarted = () => {
+    handleStateChange('auth')
+  }
+
   const handleLogin = () => {
     setIsAuthenticated(true)
-    handleStateChange('landing')
+    handleStateChange('home')
   }
 
   const handleLogout = () => {
     setIsAuthenticated(false)
-    handleStateChange('auth')
+    handleStateChange('landing')
   }
 
   const renderCurrentScreen = () => {
     switch (appState) {
+      case 'landing':
+        return <LandingPage onGetStarted={handleGetStarted} />
       case 'auth':
         return <AuthScreen onLogin={handleLogin} />
-      case 'landing':
+      case 'home':
         return (
           <>
             <Navigation 
               isAuthenticated={isAuthenticated} 
               onNavigate={handleStateChange}
               onLogout={handleLogout}
-              currentPage="landing"
+              currentPage="home"
             />
             <LandingScreen onStartChat={() => handleStateChange('chat')} />
           </>
@@ -57,7 +64,7 @@ export default function Home() {
               onLogout={handleLogout}
               currentPage="chat"
             />
-            <ChatInterface onBack={() => handleStateChange('landing')} />
+            <ChatInterface onBack={() => handleStateChange('home')} />
           </>
         )
       case 'dashboard':
@@ -73,7 +80,7 @@ export default function Home() {
           </>
         )
       default:
-        return <AuthScreen onLogin={handleLogin} />
+        return <LandingPage onGetStarted={handleGetStarted} />
     }
   }
 

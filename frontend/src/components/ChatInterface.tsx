@@ -107,40 +107,40 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
   }
 
   return (
-    <div className="flex h-screen w-full bg-slate-900 m-0 p-0 pt-16 relative overflow-hidden">
-      {/* Textured Background */}
+    <div className="flex h-screen w-full bg-sky-50 m-0 p-0 pt-16 relative overflow-hidden">
+      {/* Subtle Background */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 20% 80%, #1e40af 0%, transparent 50%), 
-                           radial-gradient(circle at 80% 20%, #7c3aed 0%, transparent 50%),
-                           radial-gradient(circle at 40% 40%, #0f172a 0%, transparent 50%)`
+          backgroundImage: `radial-gradient(circle at 20% 80%, #0ea5e9 0%, transparent 50%), 
+                           radial-gradient(circle at 80% 20%, #a855f7 0%, transparent 50%),
+                           radial-gradient(circle at 40% 40%, #f0f9ff 0%, transparent 50%)`
         }} />
       </div>
       
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col relative z-10">
         {/* Header */}
-        <header className="bg-slate-800/90 backdrop-blur-md border-b border-slate-700/50 p-4 flex items-center justify-between shadow-sm">
+        <header className="bg-white/90 navbar-blur border-b border-gray-100 p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-3">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl hover:bg-slate-700 transition-all duration-300 ease-in-out hover:scale-105 text-slate-300 hover:text-white"
+                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-300 ease-in-out hover:scale-105 text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">TasteTrip AI</h1>
-              <p className="text-sm text-slate-400">Your Cultural Discovery Assistant</p>
+              <h1 className="text-xl font-bold text-gray-900">TasteTrip AI</h1>
+              <p className="text-sm text-gray-600">Your Cultural Discovery Assistant</p>
             </div>
           </div>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="lg:hidden p-2 rounded-xl hover:bg-slate-700 transition-all duration-300 ease-in-out hover:scale-105 text-slate-300 hover:text-white"
+            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-all duration-300 ease-in-out hover:scale-105 text-gray-600 hover:text-gray-900"
           >
             {showHistory ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -179,13 +179,13 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
         </div>
 
         {/* Chat Input */}
-        <div className="p-4 bg-slate-800/90 backdrop-blur-md border-t border-slate-700/50 shadow-sm">
+        <div className="p-4 bg-white/90 navbar-blur border-t border-gray-100 shadow-sm">
           <ChatInput onSubmit={handleUserInput} disabled={isLoading} />
         </div>
       </div>
 
       {/* Taste History Sidebar */}
-      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 bg-slate-800/95 backdrop-blur-md border-l border-slate-700/50 relative z-10`}>
+      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 bg-white/95 navbar-blur border-l border-gray-100 relative z-10`}>
         <TasteHistory />
       </div>
     </div>
