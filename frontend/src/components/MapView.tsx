@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { MapPin, Navigation, Maximize2 } from 'lucide-react'
+import { useTheme } from './ThemeContext'
 
 interface MapViewProps {
   lat?: number
@@ -18,6 +19,7 @@ interface MapViewProps {
 export default function MapView({ lat, lng, location, title, className = '' }: MapViewProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [mapSrc, setMapSrc] = useState('')
+  const { theme } = useTheme();
 
   useEffect(() => {
     let src = ''
@@ -56,36 +58,35 @@ export default function MapView({ lat, lng, location, title, className = '' }: M
 
   if (!mapSrc) {
     return (
-      <div className={`bg-gray-100 rounded-2xl p-8 text-center ${className}`}>
+      <div style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)' }} className={`rounded-2xl p-8 text-center ${className}`}>
         <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-        <p className="text-gray-500">Location not available</p>
+        <p style={{ color: 'var(--color-text-secondary)' }}>Location not available</p>
       </div>
     )
   }
 
   return (
     <>
-      <div className={`relative bg-white rounded-2xl overflow-hidden shadow-md ${className}`}>
+      <div style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)' }} className={`relative rounded-2xl overflow-hidden shadow-md ${className}`}>
         {/* Map Controls */}
         <div className="absolute top-4 right-4 z-10 flex space-x-2">
           <button
             onClick={() => setIsFullscreen(true)}
-            className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors"
+            style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }}
+            className="p-2 rounded-lg shadow-md transition-colors"
             title="Fullscreen"
           >
-            <Maximize2 className="w-4 h-4 text-gray-600" />
+            <Maximize2 className="w-4 h-4" />
           </button>
-          
           <button
             onClick={openInGoogleMaps}
-            className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors"
+            style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }}
+            className="p-2 rounded-lg shadow-md transition-colors"
             title="Open in Google Maps"
           >
-            <Navigation className="w-4 h-4 text-gray-600" />
+            <Navigation className="w-4 h-4" />
           </button>
         </div>
-
-        {/* Map Embed */}
         <iframe
           src={mapSrc}
           width="100%"
@@ -96,10 +97,8 @@ export default function MapView({ lat, lng, location, title, className = '' }: M
           referrerPolicy="no-referrer-when-downgrade"
           className="w-full h-full"
         />
-
-        {/* Location Info Overlay */}
         {(title || location) && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+          <div style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)' }} className="absolute bottom-0 left-0 right-0 p-4">
             <div className="text-white">
               {title && <h3 className="font-semibold">{title}</h3>}
               {location && <p className="text-sm opacity-90">{location}</p>}
@@ -107,18 +106,16 @@ export default function MapView({ lat, lng, location, title, className = '' }: M
           </div>
         )}
       </div>
-
-      {/* Fullscreen Modal */}
       {isFullscreen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
-          <div className="relative w-full h-full max-w-6xl max-h-4xl bg-white rounded-2xl overflow-hidden">
+          <div style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)' }} className="relative w-full h-full max-w-6xl max-h-4xl rounded-2xl overflow-hidden">
             <button
               onClick={() => setIsFullscreen(false)}
-              className="absolute top-4 right-4 z-10 p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors"
+              style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }}
+              className="absolute top-4 right-4 z-10 p-2 rounded-lg shadow-md transition-colors"
             >
-              <Maximize2 className="w-4 h-4 text-gray-600" />
+              <Maximize2 className="w-4 h-4" />
             </button>
-            
             <iframe
               src={mapSrc}
               width="100%"

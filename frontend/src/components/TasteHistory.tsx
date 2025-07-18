@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Clock, Search, Trash2, RefreshCw } from 'lucide-react'
+import { useTheme } from './ThemeContext'
 
 interface TasteEntry {
   id: string
@@ -16,6 +17,7 @@ interface TasteEntry {
  */
 export default function TasteHistory() {
   const [searchTerm, setSearchTerm] = useState('')
+  const { theme } = useTheme();
   
   // Mock data - replace with actual API integration
   const [tasteHistory] = useState<TasteEntry[]>([
@@ -69,20 +71,20 @@ export default function TasteHistory() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white/95 navbar-blur">
+    <div style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)' }} className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Taste History</h2>
+      <div style={{ borderBottom: '1px solid var(--color-card-border)' }} className="p-4">
+        <h2 className="text-lg font-semibold mb-3">Taste History</h2>
         
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`} />
           <input
             type="text"
             placeholder="Search your tastes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 bg-white text-gray-900 rounded-xl focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out"
+            className={`w-full pl-10 pr-4 py-2 text-sm border ${theme === 'dark' ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-900'} rounded-xl focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out`}
           />
         </div>
       </div>
@@ -150,8 +152,8 @@ export default function TasteHistory() {
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-100">
-        <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-xl transition-all duration-300">
+      <div style={{ borderTop: '1px solid var(--color-card-border)' }} className="p-4">
+        <button style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="w-full py-2 rounded-xl transition-all duration-300">
           Clear All History
         </button>
       </div>

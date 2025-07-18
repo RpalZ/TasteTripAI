@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Search, ArrowRight, Globe, Sparkles, Users, MapPin, Zap } from 'lucide-react'
+import { useTheme } from './ThemeContext'
 
 interface TravelIdea {
   id: string
@@ -138,6 +139,7 @@ const travelIdeas: TravelIdea[] = [
 ]
 
 export default function LandingScreen({ onStartChat }: LandingScreenProps) {
+  const { theme } = useTheme();
   const [currentLandmark, setCurrentLandmark] = useState(0)
   const [searchFocused, setSearchFocused] = useState(false)
 
@@ -177,7 +179,7 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 pt-16 bg-white">
+    <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="min-h-screen w-full relative overflow-hidden m-0 p-0">
       {/* Background Landmarks Carousel */}
       <div className="absolute inset-0 z-0">
         {landmarks.map((landmark, index) => (
@@ -198,20 +200,18 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
+      <div className="relative z-10 min-h-screen flex flex-col" style={{ background: 'var(--color-bg-primary)' }}>
         {/* Hero Section */}
-        <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="flex-1 flex items-center justify-center px-6 py-12" style={{ background: 'var(--color-bg-primary)' }}>
           <div className="max-w-4xl mx-auto text-center">
             {/* Main Headline */}
             <div className="mb-8 slide-up">
-              <h2 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+              <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight" style={{ color: 'var(--color-text-primary)' }}>
                 Discover Your
-                <span className="text-sky-500">
-                  {' '}Perfect{' '}
-                </span>
+                <span style={{ color: 'var(--color-accent)' }}> Perfect </span>
                 Cultural Journey
               </h2>
-              <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
+              <p className="text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed mb-8" style={{ color: 'var(--color-text-secondary)' }}>
                 AI-powered recommendations for food, music, art, and travel experiences tailored to your unique taste
               </p>
             </div>
@@ -237,7 +237,8 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                     />
                     <button
                       onClick={handleSearchClick}
-                      className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
+                      style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
+                      className="px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl flex items-center space-x-2 hover:scale-105"
                     >
                       <span>Explore</span>
                       <ArrowRight className="w-5 h-5" />
@@ -250,13 +251,13 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         </div>
 
         {/* Travel Ideas Section */}
-        <div className="px-6 pb-12">
+        <div className="px-6 pb-12" style={{ background: 'var(--color-bg-primary)' }}>
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8 slide-up stagger-2">
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              <h3 className="text-2xl md:text-3xl font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
                 Popular Cultural Destinations
               </h3>
-              <p className="text-gray-600">
+              <p style={{ color: 'var(--color-text-secondary)' }}>
                 Get inspired by these curated cultural journeys from real travelers
               </p>
             </div>
@@ -266,7 +267,8 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                 <button
                   key={destination.id}
                   onClick={() => handleTravelIdeaClick(destination)}
-                  className={`group relative bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white transition-all duration-300 ease-in-out border border-gray-100 hover:border-sky-200 hover:scale-105 slide-up stagger-${index + 3} shadow-lg hover:shadow-xl`}
+                  className={`group relative rounded-2xl overflow-hidden transition-all duration-300 ease-in-out border hover:scale-105 slide-up stagger-${index + 3} shadow-lg hover:shadow-xl`}
+                  style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-card-border)' }}
                 >
                   {/* Destination Image */}
                   <div className="relative h-48 overflow-hidden">
@@ -280,9 +282,9 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                       <span className="text-3xl">{destination.emoji}</span>
                     </div>
                     <div className="absolute top-4 right-4">
-                      <div className="flex items-center space-x-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
-                        <span className="text-yellow-400 text-sm">★</span>
-                        <span className="text-xs font-medium text-gray-900">{destination.rating}</span>
+                      <div className="flex items-center space-x-1 rounded-full px-2 py-1" style={{ background: 'var(--color-bg-secondary)' }}>
+                        <span style={{ color: 'var(--color-accent-secondary)', fontSize: '0.875rem' }}>★</span>
+                        <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>{destination.rating}</span>
                       </div>
                     </div>
                   </div>
@@ -290,26 +292,26 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
                   {/* Content */}
                   <div className="p-6">
                     <div className="mb-3">
-                      <h4 className="text-xl font-semibold text-gray-900 mb-1">
+                      <h4 className="text-xl font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
                         {destination.title}
                       </h4>
-                      <p className="text-gray-600 text-sm mb-2">
+                      <p className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
                         {destination.subtitle}
                       </p>
-                      <p className="text-gray-500 text-xs">
+                      <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                         📍 {destination.location}
                       </p>
                     </div>
                     
                     {/* Popularity */}
                     <div className="mb-4">
-                      <p className="text-xs text-sky-600 font-medium">
+                      <p className="text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
                         Used by {destination.popularity}
                       </p>
                     </div>
                     
                     {/* CTA Button */}
-                    <div className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2 group-hover:scale-105">
+                    <div style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }} className="px-4 py-2 rounded-xl font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2 group-hover:scale-105">
                       <span>Start with this trip</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
@@ -321,11 +323,12 @@ export default function LandingScreen({ onStartChat }: LandingScreenProps) {
         </div>
 
         {/* Bottom CTA */}
-        <div className="px-6 pb-8">
+        <div className="px-6 pb-8" style={{ background: 'var(--color-bg-primary)' }}>
           <div className="max-w-4xl mx-auto text-center slide-up stagger-6">
             <button
               onClick={handleSearchClick}
-              className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
+              style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
+              className="px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:scale-105"
             >
               Start Your Journey
             </button>

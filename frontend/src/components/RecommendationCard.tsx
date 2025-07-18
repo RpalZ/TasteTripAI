@@ -2,6 +2,7 @@
 
 import { MapPin, ExternalLink, Heart } from 'lucide-react'
 import { useState } from 'react'
+import { useTheme } from './ThemeContext'
 
 interface Recommendation {
   title: string
@@ -22,6 +23,7 @@ interface RecommendationCardProps {
  */
 export default function RecommendationCard({ recommendation }: RecommendationCardProps) {
   const [isLiked, setIsLiked] = useState(false)
+  const { theme } = useTheme();
 
   const getCategoryIcon = (type: string) => {
     switch (type.toLowerCase()) {
@@ -68,47 +70,31 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
   }
 
   return (
-    <div className="recommendation-card p-6 group">
+    <div style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }} className="p-6 group rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <span className="text-2xl">{getCategoryIcon(recommendation.type)}</span>
           <div>
-            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-              {recommendation.title}
-            </h3>
-            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(recommendation.type)}`}>
-              {recommendation.type}
-            </span>
+            <h3 className="font-semibold transition-colors" style={{ color: 'var(--color-text-primary)' }}>{recommendation.title}</h3>
+            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(recommendation.type)}`}>{recommendation.type}</span>
           </div>
         </div>
-        
         <button
           onClick={() => setIsLiked(!isLiked)}
-          className={`p-2 rounded-full transition-all duration-200 ${
-            isLiked 
-              ? 'bg-red-100 text-red-600' 
-              : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-          }`}
+          className={`p-2 rounded-full transition-all duration-200 ${isLiked ? 'bg-red-100 text-red-600' : ''}`}
+          style={!isLiked ? { background: 'var(--color-card-bg)', color: 'var(--color-text-secondary)' } : {}}
         >
           <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
         </button>
       </div>
-
-      {/* Description */}
-      <p className="text-gray-600 text-sm leading-relaxed mb-4">
-        {recommendation.description}
-      </p>
-
-      {/* Location */}
+      <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--color-text-secondary)' }}>{recommendation.description}</p>
       {recommendation.location && (
-        <div className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+        <div className="flex items-center space-x-2 text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
           <MapPin className="w-4 h-4" />
           <span>{recommendation.location}</span>
         </div>
       )}
-
-      {/* Actions */}
       <div className="flex space-x-2">
         {(recommendation.location || (recommendation.lat && recommendation.lng)) && (
           <button
@@ -119,7 +105,6 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
             <span>View on Maps</span>
           </button>
         )}
-        
         <button className="btn-secondary flex items-center space-x-2 text-sm">
           <ExternalLink className="w-4 h-4" />
           <span>Learn More</span>
