@@ -1,8 +1,9 @@
 'use client'
 
-import { Sparkles, Compass, Search, BarChart3, LogOut, User } from 'lucide-react'
+import { Sparkles, Compass, Search, BarChart3, LogOut, User, Moon, Sun } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTheme } from './ThemeContext'
 
 interface NavigationProps {
   isAuthenticated: boolean
@@ -12,6 +13,7 @@ interface NavigationProps {
 
 export default function Navigation({ isAuthenticated, onLogout }: NavigationProps) {
   const pathname = usePathname()
+  const { theme, toggleTheme } = useTheme()
   if (!isAuthenticated) return null
 
   return (
@@ -73,7 +75,20 @@ export default function Navigation({ isAuthenticated, onLogout }: NavigationProp
               <User className="w-4 h-4" />
               <span className="text-sm">Welcome back!</span>
             </div>
-            
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggleTheme}
+              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-300 ${
+                theme === 'dark' ? 'bg-sky-500' : 'bg-gray-200'
+              }`}
+              title="Toggle dark mode"
+            >
+              {theme === 'dark' ? (
+                <Moon className="w-5 h-5 text-white" />
+              ) : (
+                <Sun className="w-5 h-5 text-yellow-500" />
+              )}
+            </button>
             <button
               onClick={onLogout}
               className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-300 hover:scale-105"

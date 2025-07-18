@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Sparkles, Mail, Lock, ArrowRight, ArrowLeft, User, MapPin, Music } from 'lucide-react'
+import { useTheme } from './ThemeContext'
 
 interface AuthScreenProps {
   onLogin: () => void
@@ -44,6 +45,7 @@ const inspirationalQuotes = [
 ]
 
 export default function AuthScreen({ onLogin }: AuthScreenProps) {
+  const { theme } = useTheme();
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
@@ -106,7 +108,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
     const step = onboardingSteps[currentStep]
     
     return (
-      <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 bg-white">
+      <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="min-h-screen w-full relative overflow-hidden m-0 p-0">
         {/* Subtle Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
@@ -129,35 +131,35 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
             {/* Progress Bar */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-600">
+                <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                   Step {currentStep + 1} of {onboardingSteps.length}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                   {Math.round(((currentStep + 1) / onboardingSteps.length) * 100)}% Complete
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full rounded-full h-2" style={{ background: 'var(--color-border)' }}>
                 <div 
-                  className="bg-sky-500 h-2 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${((currentStep + 1) / onboardingSteps.length) * 100}%` }}
+                  className="h-2 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${((currentStep + 1) / onboardingSteps.length) * 100}%`, background: 'var(--color-accent)' }}
                 />
               </div>
             </div>
 
             {/* Question Card */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 slide-up">
+            <div className="rounded-3xl p-8 shadow-2xl border slide-up" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-card-border)' }}>
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-sky-100 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'var(--color-accent-bg)' }}>
                   {step.icon}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Tell us about yourself</h2>
-                  <p className="text-gray-600">Help us personalize your experience</p>
+                  <h2 className="text-2xl font-bold mb-0" style={{ color: 'var(--color-text-primary)' }}>Tell us about yourself</h2>
+                  <p style={{ color: 'var(--color-text-secondary)' }}>Help us personalize your experience</p>
                 </div>
               </div>
 
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
                   {step.question}
                 </h3>
                 <textarea
@@ -165,7 +167,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                   onChange={(e) => updateOnboardingAnswer(e.target.value)}
                   placeholder={step.placeholder}
                   rows={4}
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out bg-white/90 resize-none"
+                  className="w-full px-4 py-3 rounded-2xl border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out resize-none"
+                  style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                 />
               </div>
 
@@ -173,7 +176,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleOnboardingBack}
-                  className="flex items-center space-x-2 px-6 py-3 text-gray-600 hover:text-gray-900 transition-all duration-300 ease-in-out hover:scale-105"
+                  className="flex items-center space-x-2 px-6 py-3 transition-all duration-300 ease-in-out hover:scale-105"
+                  style={{ color: 'var(--color-text-secondary)' }}
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -182,7 +186,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                 <button
                   onClick={handleOnboardingNext}
                   disabled={!onboardingAnswers[currentStep].trim()}
-                  className="flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+                  className="flex items-center space-x-2 px-8 py-3 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+                  style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
                 >
                   <span>{currentStep === onboardingSteps.length - 1 ? 'Complete' : 'Next'}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -196,7 +201,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden m-0 p-0 bg-white">
+    <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="min-h-screen w-full relative overflow-hidden m-0 p-0">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -218,30 +223,30 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
         <div className="w-full max-w-md">
           {/* Logo and Branding */}
           <div className="text-center mb-8 fade-in">
-            <div className="w-20 h-20 bg-sky-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl hover:scale-110 transition-transform duration-300 ease-in-out">
-              <Sparkles className="w-10 h-10 text-white" />
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl hover:scale-110 transition-transform duration-300 ease-in-out" style={{ background: 'var(--color-accent)' }}>
+              <Sparkles className="w-10 h-10" style={{ color: 'var(--color-on-accent)' }} />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+            <h1 className="text-4xl font-bold mb-4 leading-tight" style={{ color: 'var(--color-text-primary)' }}>
               {mode === 'login' ? 'Welcome Back' : 'Join TasteTrip AI'}
             </h1>
             
             {/* Rotating Inspirational Quotes */}
             <div className="h-12 flex items-center justify-center">
-              <p className="text-sky-700 text-lg leading-relaxed max-w-md mx-auto transition-all duration-500 ease-in-out">
+              <p className="text-lg leading-relaxed max-w-md mx-auto transition-all duration-500 ease-in-out" style={{ color: 'var(--color-accent-secondary)' }}>
                 {inspirationalQuotes[currentQuote]}
               </p>
             </div>
           </div>
 
           {/* Mode Toggle */}
-          <div className="flex bg-gray-100 rounded-2xl p-1 mb-8 slide-up">
+          <div className="flex rounded-2xl p-1 mb-8 slide-up" style={{ background: 'var(--color-bg-secondary)' }}>
             <button
               onClick={() => setMode('login')}
               className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
                 mode === 'login'
-                  ? 'bg-white text-sky-600 shadow-md'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white shadow-md' : ''
               }`}
+              style={mode === 'login' ? { color: 'var(--color-accent)' } : { color: 'var(--color-text-secondary)' }}
             >
               Login
             </button>
@@ -249,20 +254,20 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               onClick={() => setMode('signup')}
               className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
                 mode === 'signup'
-                  ? 'bg-white text-sky-600 shadow-md'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white shadow-md' : ''
               }`}
+              style={mode === 'signup' ? { color: 'var(--color-accent)' } : { color: 'var(--color-text-secondary)' }}
             >
               Sign Up
             </button>
           </div>
 
           {/* Auth Form */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 slide-up">
+          <div className="rounded-3xl p-8 shadow-2xl border slide-up" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-card-border)' }}>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center space-x-2">
+                <label htmlFor="email" className="text-sm font-medium flex items-center space-x-2" style={{ color: 'var(--color-text-secondary)' }}>
                   <Mail className="w-4 h-4" />
                   <span>Email Address</span>
                 </label>
@@ -272,14 +277,15 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out bg-white/90"
+                  className="w-full px-4 py-3 rounded-2xl border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out"
+                  style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   required
                 />
               </div>
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700 flex items-center space-x-2">
+                <label htmlFor="password" className="text-sm font-medium flex items-center space-x-2" style={{ color: 'var(--color-text-secondary)' }}>
                   <Lock className="w-4 h-4" />
                   <span>Password</span>
                 </label>
@@ -289,7 +295,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out bg-white/90"
+                  className="w-full px-4 py-3 rounded-2xl border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out"
+                  style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   required
                 />
               </div>
@@ -297,7 +304,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               {/* Confirm Password Field (Sign Up Only) */}
               {mode === 'signup' && (
                 <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 flex items-center space-x-2">
+                  <label htmlFor="confirmPassword" className="text-sm font-medium flex items-center space-x-2" style={{ color: 'var(--color-text-secondary)' }}>
                     <Lock className="w-4 h-4" />
                     <span>Confirm Password</span>
                   </label>
@@ -307,7 +314,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm your password"
-                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out bg-white/90"
+                    className="w-full px-4 py-3 rounded-2xl border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out"
+                    style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                     required
                   />
                 </div>
@@ -317,7 +325,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               <button
                 type="submit"
                 disabled={isLoading || !email || !password || (mode === 'signup' && !confirmPassword)}
-                className="w-full bg-sky-500 hover:bg-sky-600 text-white py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 hover:scale-105"
+                className="w-full py-4 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 hover:scale-105"
+                style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
               >
                 {isLoading ? (
                   <div className="loading-dots text-lg">
@@ -335,15 +344,15 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
             {/* Additional Options */}
             <div className="mt-6 text-center">
               {mode === 'login' && (
-                <button className="text-sm text-sky-600 hover:text-sky-700 font-medium transition-colors duration-300 mb-4">
+                <button className="text-sm font-medium mb-4 transition-colors duration-300" style={{ color: 'var(--color-accent)' }}>
                   Forgot Password?
                 </button>
               )}
               
-              <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-                <button className="hover:text-gray-700 transition-colors duration-300">Privacy Policy</button>
+              <div className="flex items-center justify-center space-x-4 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                <button className="hover:underline transition-colors duration-300">Privacy Policy</button>
                 <span>•</span>
-                <button className="hover:text-gray-700 transition-colors duration-300">Terms of Service</button>
+                <button className="hover:underline transition-colors duration-300">Terms of Service</button>
               </div>
             </div>
           </div>

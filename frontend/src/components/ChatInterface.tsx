@@ -6,6 +6,7 @@ import MessageBubble from '@/components/MessageBubble'
 import RecommendationCard from '@/components/RecommendationCard'
 import TasteHistory from '@/components/TasteHistory'
 import { Menu, X, Sparkles, ArrowLeft } from 'lucide-react'
+import { useTheme } from './ThemeContext'
 
 interface Message {
   id: string
@@ -40,6 +41,7 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const { theme } = useTheme();
 
   const handleUserInput = async (input: string) => {
     // Add user message with animation
@@ -107,7 +109,7 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
   }
 
   return (
-    <div className="flex h-screen w-full bg-sky-50 m-0 p-0 pt-16 relative overflow-hidden">
+    <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="flex h-screen w-full m-0 p-0 relative overflow-hidden">
       {/* Subtle Background */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -120,27 +122,29 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col relative z-10">
         {/* Header */}
-        <header className="bg-white/90 navbar-blur border-b border-gray-100 p-4 flex items-center justify-between shadow-sm">
+        <header style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', borderColor: 'var(--color-card-border)' }} className="border-b p-4 flex items-center justify-between shadow-sm navbar-blur">
           <div className="flex items-center space-x-3">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-300 ease-in-out hover:scale-105 text-gray-600 hover:text-gray-900"
+                className="p-2 rounded-xl transition-all duration-300 ease-in-out hover:scale-105"
+                style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)' }}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <div className="w-10 h-10 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: 'var(--color-accent)' }}>
+              <Sparkles className="w-6 h-6" style={{ color: 'var(--color-on-accent)' }} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">TasteTrip AI</h1>
-              <p className="text-sm text-gray-600">Your Cultural Discovery Assistant</p>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>TasteTrip AI</h1>
+              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Your Cultural Discovery Assistant</p>
             </div>
           </div>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-all duration-300 ease-in-out hover:scale-105 text-gray-600 hover:text-gray-900"
+            className="lg:hidden p-2 rounded-xl transition-all duration-300 ease-in-out hover:scale-105"
+            style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)' }}
           >
             {showHistory ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -179,13 +183,13 @@ export default function ChatInterface({ initialQuery, onBack }: ChatInterfacePro
         </div>
 
         {/* Chat Input */}
-        <div className="p-4 bg-white/90 navbar-blur border-t border-gray-100 shadow-sm">
+        <div className="p-4 navbar-blur border-t shadow-sm" style={{ background: 'var(--color-card-bg)', borderColor: 'var(--color-card-border)' }}>
           <ChatInput onSubmit={handleUserInput} disabled={isLoading} />
         </div>
       </div>
 
       {/* Taste History Sidebar */}
-      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 bg-white/95 navbar-blur border-l border-gray-100 relative z-10`}>
+      <div className={`${showHistory ? 'block' : 'hidden'} lg:block w-80 navbar-blur border-l relative z-10`} style={{ background: 'var(--color-card-bg)', borderColor: 'var(--color-card-border)' }}>
         <TasteHistory />
       </div>
     </div>

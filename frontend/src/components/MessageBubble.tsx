@@ -1,6 +1,7 @@
 'use client'
 
 import { Bot, User } from 'lucide-react'
+import { useTheme } from './ThemeContext'
 
 interface Message {
   id: string
@@ -20,30 +21,22 @@ interface MessageBubbleProps {
  */
 export default function MessageBubble({ message, isLoading = false }: MessageBubbleProps) {
   const isUser = message.type === 'user'
-  
+  const { theme } = useTheme();
+
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3 max-w-4xl`}>
         {/* Avatar */}
-        <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center ${
-          isUser 
-            ? 'bg-sky-500' 
-            : 'bg-mint-500'
-        }`}>
+        <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center ${isUser ? 'bg-sky-500' : 'bg-mint-500'}`}>
           {isUser ? (
             <User className="w-5 h-5 text-white" />
           ) : (
             <Bot className="w-5 h-5 text-white" />
           )}
         </div>
-
         {/* Message Content */}
         <div className={`chat-bubble ${isUser ? 'ml-3' : 'mr-3'}`}>
-          <div className={`px-4 py-3 rounded-2xl ${
-            isUser 
-              ? 'bg-sky-500 text-white shadow-lg' 
-              : 'bg-white border border-gray-100 text-gray-900 shadow-md'
-          }`}>
+          <div className={`px-4 py-3 rounded-2xl ${isUser ? 'bg-sky-500 text-white shadow-lg' : ''}`} style={!isUser ? { background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' } : {}}>
             <p className="text-sm leading-relaxed whitespace-pre-wrap">
               {isLoading ? (
                 <span className="loading-dots">{message.content}</span>
@@ -52,9 +45,7 @@ export default function MessageBubble({ message, isLoading = false }: MessageBub
               )}
             </p>
           </div>
-          
-          {/* Timestamp */}
-          <div className={`mt-1 text-xs text-gray-500 ${isUser ? 'text-right' : 'text-left'}`}>
+          <div className={`mt-1 text-xs ${isUser ? 'text-right' : 'text-left'}`} style={!isUser ? { color: 'var(--color-text-secondary)' } : {}}>
             {message.timestamp.toLocaleTimeString([], { 
               hour: '2-digit', 
               minute: '2-digit' 

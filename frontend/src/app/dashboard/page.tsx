@@ -8,7 +8,7 @@ export default function DashboardPage() {
   const router = useRouter();
   return (
     <>
-      <Navigation isAuthenticated={true} currentPage="dashboard" onNavigate={() => {}} onLogout={() => { router.push('/auth'); }} />
+      <Navigation isAuthenticated={true} currentPage="dashboard" onLogout={() => { router.push('/auth'); }} />
       <Dashboard />
     </>
   );
