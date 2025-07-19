@@ -31,6 +31,7 @@ html {
   --color-accent-secondary-bg: #bae6fd; /* sky-200 */
   --color-accent-tertiary-bg: #cffafe; /* cyan-100 */
   --color-accent-tertiary-bg2: #a5f3fc; /* cyan-200 */
+  --color-tastehistory-query: #374151; /* Tailwind gray-700 */
 }
 html.dark {
   --color-bg-primary: #111827; /* gray-900 */
@@ -57,6 +58,7 @@ html.dark {
   --color-accent-secondary-bg: #0369a1;
   --color-accent-tertiary-bg: #164e63;
   --color-accent-tertiary-bg2: #0e7490;
+  --color-tastehistory-query: #d1d5db; /* Tailwind gray-300 */
 }
 
 @import "tailwindcss";
