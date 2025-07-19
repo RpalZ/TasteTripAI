@@ -80,7 +80,7 @@ const travelDestinations = [
     popularity: '3,600+ travelers',
     rating: 4.8,
     emoji: '👗',
-    image: 'https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=800&h=600&fit=crop',
+    image: '/fashion-milan-galleria.jpg',
     gradient: 'from-lavender-500 to-mint-500'
   }
 ]
