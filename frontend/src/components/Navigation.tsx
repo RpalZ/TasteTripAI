@@ -17,7 +17,13 @@ export default function Navigation({ isAuthenticated, onLogout }: NavigationProp
   if (!isAuthenticated) return null
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 navbar-blur border-b border-gray-100 shadow-sm">
+    <nav
+      className="sticky top-0 z-50 navbar-blur shadow-sm"
+      style={{
+        background: 'var(--color-bg-navbar)',
+        borderBottom: '1px solid var(--color-card-border)'
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
