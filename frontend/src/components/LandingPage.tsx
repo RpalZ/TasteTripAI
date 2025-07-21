@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Sparkles, ArrowRight, Search, MapPin, MessageCircle, Zap, Globe, Users, Heart, Bot, Map, Compass } from 'lucide-react'
 import { useTheme } from './ThemeContext'
+import GoogleMap from './GoogleMap';
 
 interface LandingPageProps {
   onGetStarted: () => void
@@ -224,51 +225,17 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
       </section>
 
       {/* Map Integration Section */}
-      <section className="scroll-section min-h-screen flex items-center px-6 relative" style={{ background: theme === 'dark' ? '#101828' : '#fff' }}>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="slide-up">
-            <div className="w-16 h-16 rounded-3xl flex items-center justify-center mb-8" style={{ background: 'var(--color-accent-tertiary-bg)' }}>
-              <Map className="w-8 h-8" style={{ color: 'var(--color-accent-tertiary)' }} />
-            </div>
-            <h2 className="text-5xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>
-              Explore with Interactive Maps
-            </h2>
-            <p className="text-xl leading-relaxed mb-8" style={{ color: 'var(--color-text-secondary)' }}>
-              Discover cultural experiences near you or in your dream destinations with integrated maps and real-world locations.
-            </p>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full" style={{ background: 'var(--color-accent-tertiary)' }}></div>
-                <span style={{ color: 'var(--color-text-tertiary)' }}>Real-time location data</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full" style={{ background: 'var(--color-accent-tertiary)' }}></div>
-                <span style={{ color: 'var(--color-text-tertiary)' }}>Interactive exploration</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full" style={{ background: 'var(--color-accent-tertiary)' }}></div>
-                <span style={{ color: 'var(--color-text-tertiary)' }}>Direct booking links</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="slide-up stagger-1">
-            <div className="rounded-3xl p-8 shadow-2xl border relative overflow-hidden" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-border)' }}>
-              <div className="aspect-video rounded-2xl flex items-center justify-center relative" style={{ background: 'var(--color-bg-secondary)' }}>
-                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(135deg, var(--color-accent-tertiary-bg), var(--color-accent-tertiary-bg2))' }}></div>
-                <div className="relative z-10 text-center">
-                  <MapPin className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--color-accent-tertiary)' }} />
-                  <p style={{ color: 'var(--color-accent-tertiary)', fontWeight: 500 }}>Interactive Map View</p>
-                  <p style={{ color: 'var(--color-accent-tertiary)', fontSize: '0.875rem' }}>Discover cultural spots worldwide</p>
-                </div>
-                {/* Mock map pins */}
-                <div className="absolute top-4 left-6 w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--color-accent)' }}></div>
-                <div className="absolute top-8 right-8 w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--color-accent-secondary)', animationDelay: '0.5s' }}></div>
-                <div className="absolute bottom-6 left-12 w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--color-accent-tertiary)', animationDelay: '1s' }}></div>
-                <div className="absolute bottom-8 right-6 w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--color-accent-quaternary)', animationDelay: '1.5s' }}></div>
-              </div>
-            </div>
-          </div>
+      <section className="scroll-section min-h-screen flex flex-col items-center px-6 justify-center relative" style={{ background: theme === 'dark' ? '#101828' : '#fff' }}>
+        <div className="max-w-4xl w-full mx-auto text-center mb-8">
+          <h2 className="text-5xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>
+            Explore with Interactive Maps
+          </h2>
+          <p className="text-xl leading-relaxed mb-8" style={{ color: 'var(--color-text-secondary)' }}>
+            Discover cultural experiences near you or in your dream destinations with integrated maps and real-world locations.
+          </p>
+        </div>
+        <div className="w-full max-w-4xl flex justify-center">
+          <GoogleMap />
         </div>
       </section>
 
