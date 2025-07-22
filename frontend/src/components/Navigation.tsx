@@ -1,9 +1,12 @@
 'use client'
 
-import { Sparkles, Compass, Search, BarChart3, LogOut, User, Moon, Sun } from 'lucide-react'
+import { Sparkles, Compass, Search, BarChart3, LogOut, User, Moon, Sun, Router } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from './ThemeContext'
+import { useRouter } from 'next/navigation'
+import React from 'react'
+
 
 interface NavigationProps {
   isAuthenticated: boolean
@@ -13,8 +16,15 @@ interface NavigationProps {
 
 export default function Navigation({ isAuthenticated, onLogout }: NavigationProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, toggleTheme } = useTheme()
-  if (!isAuthenticated) return null
+  // Redirect to '/' if not authenticated
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
+  if (!isAuthenticated) return null;
 
   return (
     <nav

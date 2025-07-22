@@ -90,6 +90,39 @@ create policy "Users can delete their own bookmarks" on user_bookmarks
 
 ---
 
+## 3. `user_profile` (User Profile & Onboarding)
+
+**Purpose:** Stores user profile information and onboarding status.
+
+**Schema:**
+```sql
+create table if not exists user_profile (
+  id uuid primary key references auth.users(id),
+  username text unique,
+  has_onboarded boolean default false,
+  created_at timestamptz default now()
+);
+```
+
+**Fields:**
+- `id`: User UUID (from Supabase Auth)
+- `username`: Unique username
+- `has_onboarded`: Boolean flag for onboarding completion
+- `created_at`: Timestamp
+
+**RLS Policies:**
+```sql
+alter table user_profile enable row level security;
+create policy "Users can view their own profile" on user_profile
+  for select using (auth.uid() = id);
+create policy "Users can create their own profile" on user_profile
+  for insert with check (auth.uid() = id);
+create policy "Users can update their own profile" on user_profile
+  for update using (auth.uid() = id);
+```
+
+---
+
 ## 3. Authentication
 
 - All tables reference `auth.users(id)` for user association.

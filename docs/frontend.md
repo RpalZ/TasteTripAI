@@ -56,6 +56,20 @@ frontend/
 - **Auth:** All API calls include the Supabase JWT in the `Authorization` header.
 - **Error Handling:** User-friendly messages and loading states for all async operations.
 
+## 🧑‍🚀 Onboarding Flow
+- After sign up, users are guided through onboarding:
+  1. Choose a unique username (stored in Supabase `user_profile` table).
+  2. Select interests from a list of topics (e.g., Gaming, Music, Films, etc.).
+  3. Preferences are sent to the backend `/api/taste` endpoint and stored as a vector.
+  4. On completion, users are redirected to the chat page.
+
+## 🔐 Authentication
+- Uses Supabase Auth for sign up, sign in, and session management.
+- All API calls include the Supabase JWT in the `Authorization` header.
+- Auth state is managed with React state and Supabase's `onAuthStateChange` listener for real-time updates.
+- Onboarding is only shown after successful sign up and before the user has completed onboarding.
+- User profile (username, onboarding status) is stored in the `user_profile` table in Supabase.
+
 ## ⚙️ Environment Variables
 - `NEXT_PUBLIC_API_BASE_URL`: Backend API endpoint
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`: Google Maps API key

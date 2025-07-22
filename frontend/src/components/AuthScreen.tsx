@@ -1,8 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Sparkles, Mail, Lock, ArrowRight, ArrowLeft, User, MapPin, Music } from 'lucide-react'
 import { useTheme } from './ThemeContext'
+import { supabase } from '../utils/supabaseClient';
+import axios from 'axios';
+import OnboardingScreen from './OnboardingScreen';
 
 interface AuthScreenProps {
   onLogin: () => void
@@ -44,7 +47,7 @@ const inspirationalQuotes = [
   "Where taste meets travel, magic happens"
 ]
 
-export default function AuthScreen({ onLogin }: AuthScreenProps) {
+export default  function AuthScreen({ onLogin }: AuthScreenProps) {
   const { theme } = useTheme();
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -55,6 +58,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [currentQuote, setCurrentQuote] = useState(0)
   const [onboardingAnswers, setOnboardingAnswers] = useState<string[]>(['', '', ''])
+  const [userID, setUserID] = useState<string | undefined>(undefined)
 
   // Rotate quotes every 4 seconds
   useState(() => {
@@ -64,28 +68,82 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
     return () => clearInterval(interval)
   })
 
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    
-    // Simulate authentication delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    setIsLoading(false)
-    
-    if (mode === 'signup') {
-      setShowOnboarding(true)
-    } else {
-      onLogin()
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      if (mode === 'signup') {
+        if (password !== confirmPassword) {
+          alert('Passwords do not match');
+          setIsLoading(false);
+          return;
+        }
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        setUserID(data.user?.id)
+
+        if (error) {
+          alert(error.message);
+          setIsLoading(false);
+          return;
+        }
+
+        // Store JWT if available (user may need to confirm email)
+        if (data.session?.access_token) {
+          localStorage.setItem('supabase_token', data.session.access_token);
+        }
+        setShowOnboarding(true);
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) {
+          alert(error.message);
+          setIsLoading(false);
+          return;
+        }
+        if (data.session?.access_token) {
+          localStorage.setItem('supabase_token', data.session.access_token);
+        }
+        onLogin();
+      }
+    } catch (err) {
+      alert('Authentication failed.');
+    } finally {
+      setIsLoading(false);
     }
   }
 
-  const handleOnboardingNext = () => {
+  const handleOnboardingNext = async () => {
     if (currentStep < onboardingSteps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
-      // Complete onboarding
-      onLogin()
+      // Complete onboarding: send preferences to backend
+      setIsLoading(true);
+      try {
+        const combinedPreferences = onboardingAnswers.filter(Boolean).join(' ');
+        // Get JWT from supabase
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        if (!token) throw new Error('No auth token found.');
+        await axios.post(
+          process.env.NEXT_PUBLIC_API_BASE_URL + '/api/taste',
+          { input: combinedPreferences },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        // Redirect to home
+        window.location.href = '/home';
+      } catch (err) {
+        alert('Failed to save preferences. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   }
 
@@ -105,99 +163,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
   }
 
   if (showOnboarding) {
-    const step = onboardingSteps[currentStep]
-    
-    return (
-      <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="min-h-screen w-full relative overflow-hidden m-0 p-0">
-        {/* Subtle Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, #0ea5e9 0%, transparent 50%), 
-                             radial-gradient(circle at 75% 75%, #a855f7 0%, transparent 50%)`
-          }} />
-        </div>
-        
-        {/* Floating Bubbles */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="floating-bubble absolute top-20 left-20 w-16 h-16 bg-sky-400 rounded-full blur-xl" />
-          <div className="floating-bubble absolute top-40 right-32 w-12 h-12 bg-lavender-400 rounded-full blur-lg" />
-          <div className="floating-bubble absolute bottom-32 left-1/4 w-20 h-20 bg-mint-300 rounded-full blur-xl" />
-          <div className="floating-bubble absolute bottom-20 right-20 w-14 h-14 bg-sky-300 rounded-full blur-lg" />
-        </div>
-
-        {/* Onboarding Content */}
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
-          <div className="w-full max-w-2xl">
-            {/* Progress Bar */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  Step {currentStep + 1} of {onboardingSteps.length}
-                </span>
-                <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {Math.round(((currentStep + 1) / onboardingSteps.length) * 100)}% Complete
-                </span>
-              </div>
-              <div className="w-full rounded-full h-2" style={{ background: 'var(--color-border)' }}>
-                <div 
-                  className="h-2 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${((currentStep + 1) / onboardingSteps.length) * 100}%`, background: 'var(--color-accent)' }}
-                />
-              </div>
-            </div>
-
-            {/* Question Card */}
-            <div className="rounded-3xl p-8 shadow-2xl border slide-up" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-card-border)' }}>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'var(--color-accent-bg)' }}>
-                  {step.icon}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-0" style={{ color: 'var(--color-text-primary)' }}>Tell us about yourself</h2>
-                  <p style={{ color: 'var(--color-text-secondary)' }}>Help us personalize your experience</p>
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-                  {step.question}
-                </h3>
-                <textarea
-                  value={onboardingAnswers[currentStep]}
-                  onChange={(e) => updateOnboardingAnswer(e.target.value)}
-                  placeholder={step.placeholder}
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-2xl border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all duration-300 ease-in-out resize-none"
-                  style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={handleOnboardingBack}
-                  className="flex items-center space-x-2 px-6 py-3 transition-all duration-300 ease-in-out hover:scale-105"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Back</span>
-                </button>
-
-                <button
-                  onClick={handleOnboardingNext}
-                  disabled={!onboardingAnswers[currentStep].trim()}
-                  className="flex items-center space-x-2 px-8 py-3 rounded-2xl font-semibold transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
-                  style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
-                >
-                  <span>{currentStep === onboardingSteps.length - 1 ? 'Complete' : 'Next'}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    // const { data: sessionData } = await supabase.auth.getSession();
+    return <OnboardingScreen onComplete={onLogin} userID={userID}></OnboardingScreen>
   }
 
   return (

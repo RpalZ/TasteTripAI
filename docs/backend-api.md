@@ -132,6 +132,42 @@ GOOGLE_MAPS_API_KEY=
 - The backend validates and returns a Google Maps link for display or booking purposes.
 - **Now recommended:** The frontend should handle booking logic and data storage directly with Supabase.
 
+## User Onboarding & Profile
+- After sign up, users complete onboarding:
+  - Choose a unique username (stored in `user_profile` table).
+  - Select interests (sent to `/api/taste` and stored as a vector).
+  - Onboarding status is tracked in `user_profile.has_onboarded`.
+
+### Table: user_profile
+```sql
+create table if not exists user_profile (
+  id uuid primary key references auth.users(id),
+  username text unique,
+  has_onboarded boolean default false,
+  created_at timestamptz default now()
+);
+```
+- `id`: User UUID (from Supabase Auth)
+- `username`: Unique username
+- `has_onboarded`: Boolean flag for onboarding completion
+- `created_at`: Timestamp
+
+**RLS Policies:**
+```sql
+alter table user_profile enable row level security;
+create policy "Users can view their own profile" on user_profile
+  for select using (auth.uid() = id);
+create policy "Users can create their own profile" on user_profile
+  for insert with check (auth.uid() = id);
+create policy "Users can update their own profile" on user_profile
+  for update using (auth.uid() = id);
+```
+
+## Authentication
+- All endpoints require a valid Supabase JWT in the `Authorization` header.
+- Auth state is managed client-side and checked on every request.
+- Onboarding status is checked via the `user_profile` table.
+
 ## Next Steps
 - Implement `/api/recommend` and `/api/booking` endpoints
 - Integrate Qloo and Google Maps APIs
