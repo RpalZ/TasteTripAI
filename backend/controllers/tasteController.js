@@ -20,7 +20,7 @@ exports.createTaste = async (req, res) => {
         {
           input,
           embedding,
-          
+          user_id: req.user.sub,
         },
       ])
       .select('id');
