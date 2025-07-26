@@ -58,7 +58,7 @@ const travelDestinations = [
     popularity: '1,800+ travelers',
     rating: 4.6,
     emoji: '🏺',
-    image: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?w=800&h=600&fit=crop',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop',
     gradient: 'from-yellow-400 to-orange-400'
   },
   {
@@ -80,7 +80,7 @@ const travelDestinations = [
     popularity: '3,600+ travelers',
     rating: 4.8,
     emoji: '👗',
-    image: '/fashion-milan-galleria.jpg',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop',
     gradient: 'from-lavender-500 to-mint-500'
   }
 ]
@@ -91,6 +91,7 @@ const landmarks = [
   'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop', // Santorini
   'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1920&h=1080&fit=crop', // Tokyo
   'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1920&h=1080&fit=crop', // Dubai
+  
 ]
 
 const travelIdeas: TravelIdea[] = [
