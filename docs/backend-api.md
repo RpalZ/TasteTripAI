@@ -168,6 +168,41 @@ create policy "Users can update their own profile" on user_profile
 - Auth state is managed client-side and checked on every request.
 - Onboarding status is checked via the `user_profile` table.
 
+## Performance Optimizations
+
+The recommendation system has been optimized for faster response times:
+
+### Response Limits
+- **Qloo API Results**: Limited to 8 recommendations per request
+- **Entity Resolution**: Reduced to 3 entities per search term
+- **Similar Tastes**: Limited to 6 similar entries for context
+
+### Performance Benefits
+- **Faster API Calls**: Reduced data transfer and processing time
+- **Quicker GPT Processing**: Smaller prompts with fewer results
+- **Better User Experience**: Faster response times
+- **Reduced Costs**: Fewer API calls and tokens used
+
+## Entity Name Cleaning
+
+The system now includes intelligent entity name cleaning and contextualization:
+
+### `cleanEntityNames()` Function
+- **Purpose**: Cleans and contextualizes entity names based on user query and taste history
+- **Input**: Raw entity names, user query, similar taste entries
+- **Output**: Cleaned, relevant entity names optimized for recommendation systems
+- **Features**:
+  - Removes generic terms (e.g., "restaurant", "place")
+  - Adds context from user's taste history
+  - Makes names more searchable and specific
+  - Ensures names are concise but descriptive
+
+### Examples of Entity Name Cleaning:
+- `["Italian restaurant"]` → `["Italian cuisine", "Italian dining"]`
+- `["jazz music"]` → `["jazz", "jazz artists"]`
+- `["New York"]` → `["New York City", "NYC"]`
+- `["action movie"]` → `["action films", "action cinema"]`
+
 ## Next Steps
 - Implement `/api/recommend` and `/api/booking` endpoints
 - Integrate Qloo and Google Maps APIs
@@ -180,6 +215,7 @@ create policy "Users can update their own profile" on user_profile
 ```sql
 create table if not exists user_tastes (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) not null,
   input text,
   embedding vector(1536),
   timestamp timestamptz default now()
@@ -193,26 +229,32 @@ create extension if not exists vector;
 
 ### Similarity Function: match_user_tastes
 ```sql
--- Returns the top N most similar user_tastes entries (excluding the given id)
+-- Returns the top N most similar user_tastes entries for the same user (excluding the given id)
 create or replace function match_user_tastes(
   query_embedding vector(1536),
   match_count int,
-  exclude_id uuid
+  exclude_id uuid,
+  user_id uuid
 )
 returns table (
   id uuid,
   input text,
   embedding vector(1536),
-  timestamp timestamptz,
+  created_at timestamptz,
   similarity float
 ) language plpgsql as $$
 begin
   return query
-    select id, input, embedding, timestamp,
-      (embedding <#> query_embedding) as similarity
+    select 
+      user_tastes.id, 
+      user_tastes.input, 
+      user_tastes.embedding, 
+      user_tastes.timestamp,
+      (user_tastes.embedding <#> query_embedding) as similarity
     from user_tastes
-    where id != exclude_id
-    order by embedding <#> query_embedding
+    where user_tastes.id != exclude_id
+      and user_tastes.user_id = match_user_tastes.user_id
+    order by user_tastes.embedding <#> query_embedding
     limit match_count;
 end;
 $$;
