@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useTheme } from './ThemeContext'
 import { useRouter } from 'next/navigation'
 import React from 'react'
-
+import { useUserProfile } from '../utils/useUserProfile'
 
 interface NavigationProps {
   isAuthenticated: boolean
@@ -18,6 +18,8 @@ export default function Navigation({ isAuthenticated, onLogout }: NavigationProp
   const pathname = usePathname()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
+  const { profile, loading } = useUserProfile()
+  
   // Redirect to '/' if not authenticated
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -25,6 +27,13 @@ export default function Navigation({ isAuthenticated, onLogout }: NavigationProp
     }
   }, [isAuthenticated, router]);
   if (!isAuthenticated) return null;
+
+  // Get display name for greeting
+  const getDisplayName = () => {
+    if (loading) return 'there';
+    if (profile?.username) return profile.username;
+    return 'there';
+  };
 
   return (
     <nav
@@ -47,7 +56,7 @@ export default function Navigation({ isAuthenticated, onLogout }: NavigationProp
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4">
             <Link
               href="/home"
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
@@ -89,7 +98,9 @@ export default function Navigation({ isAuthenticated, onLogout }: NavigationProp
           <div className="flex items-center space-x-4">
             <div className="hidden sm:flex items-center space-x-2 text-gray-600">
               <User className="w-4 h-4" />
-              <span className="text-sm">Welcome back!</span>
+              <span className="text-sm">
+                Welcome back, {getDisplayName()}!
+              </span>
             </div>
             {/* Dark mode toggle */}
             <button

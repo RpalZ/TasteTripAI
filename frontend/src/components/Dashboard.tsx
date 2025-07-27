@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { BarChart3, Heart, Clock, MapPin, Trash2, Star, TrendingUp, User, Settings, Moon, Sun } from 'lucide-react'
-import { getCategoryColor } from '@/utils/formatTaste'
+import { BarChart3, Clock, Star, Trash2, User, Settings, Moon, Sun } from 'lucide-react'
 import { useTheme } from './ThemeContext'
+import { useUserProfile } from '../utils/useUserProfile'
 
 interface TasteSummary {
   id: string
@@ -25,6 +25,7 @@ interface SavedRecommendation {
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'tastes' | 'saved' | 'profile'>('tastes')
   const { theme, toggleTheme } = useTheme()
+  const { profile, loading } = useUserProfile()
 
   // Mock data
   const tasteSummaries: TasteSummary[] = [
@@ -105,53 +106,22 @@ export default function Dashboard() {
     }
   }
 
+  // Get display name for profile
+  const getDisplayName = () => {
+    if (loading) return 'Loading...';
+    if (profile?.username) return profile.username;
+    return 'User';
+  };
+
   return (
     <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="min-h-screen pt-16 p-6 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Dashboard</h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Track your cultural discoveries and saved recommendations</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="rounded-2xl p-6 border shadow-sm transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', borderColor: 'var(--color-card-border)' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Total Queries</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>24</p>
-              </div>
-              <BarChart3 className="w-8 h-8 text-sky-500" />
-            </div>
-          </div>
-          <div className="rounded-2xl p-6 border shadow-sm transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', borderColor: 'var(--color-card-border)' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Saved Items</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{savedRecommendations.length}</p>
-              </div>
-              <Heart className="w-8 h-8 text-red-500" />
-            </div>
-          </div>
-          <div className="rounded-2xl p-6 border shadow-sm transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', borderColor: 'var(--color-card-border)' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Countries</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>8</p>
-              </div>
-              <MapPin className="w-8 h-8 text-mint-500" />
-            </div>
-          </div>
-          <div className="rounded-2xl p-6 border shadow-sm transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', borderColor: 'var(--color-card-border)' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>This Week</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>+12</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-lavender-500" />
-            </div>
-          </div>
+          <p style={{ color: 'var(--color-text-secondary)' }}>
+            Track your cultural journey and manage your preferences
+          </p>
         </div>
 
         {/* Tab Navigation */}
@@ -180,101 +150,114 @@ export default function Dashboard() {
         </div>
 
         {/* Tab Content */}
-        <div className="rounded-2xl border overflow-hidden shadow-sm transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', borderColor: 'var(--color-card-border)' }}>
-          {activeTab === 'tastes' && (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text-primary)' }}>Recent Taste Queries</h2>
-              <div className="space-y-4">
-                {tasteSummaries.map((taste) => (
-                  <div key={taste.id} className="rounded-xl p-4 hover:scale-[1.01] transition-all duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <p className="font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>{taste.query}</p>
-                        <div className="flex items-center space-x-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(taste.category)}`}>{taste.category}</span>
-                          <div className="flex items-center space-x-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                            <Clock className="w-4 h-4" />
-                            <span>{formatTimeAgo(taste.timestamp)}</span>
-                          </div>
-                          <div className="flex items-center space-x-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                            <BarChart3 className="w-4 h-4" />
-                            <span>{taste.recommendations} recommendations</span>
-                          </div>
+        {activeTab === 'tastes' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Recent Taste Queries</h2>
+            <div className="grid gap-4">
+              {tasteSummaries.map((summary) => (
+                <div
+                  key={summary.id}
+                  className="p-6 rounded-2xl transition-colors duration-300"
+                  style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        "{summary.query}"
+                      </p>
+                      <div className="flex items-center space-x-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="px-3 py-1 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200">
+                          {summary.category}
+                        </span>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{formatTimeAgo(summary.timestamp)}</span>
                         </div>
                       </div>
-                      <button className="p-2" style={{ color: 'var(--color-text-secondary)' }}>
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-sky-500">{summary.recommendations}</div>
+                      <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>recommendations</div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
-          {activeTab === 'saved' && (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text-primary)' }}>Saved Recommendations</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {savedRecommendations.map((rec) => (
-                  <div key={rec.id} className="rounded-xl p-4 hover:scale-[1.01] transition-all duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-2xl">{getTypeIcon(rec.type)}</span>
-                        <div>
-                          <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{rec.title}</h3>
-                          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{rec.location}</p>
-                        </div>
+          </div>
+        )}
+
+        {activeTab === 'saved' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Saved Recommendations</h2>
+            <div className="grid gap-4">
+              {savedRecommendations.map((rec) => (
+                <div
+                  key={rec.id}
+                  className="p-6 rounded-2xl transition-colors duration-300"
+                  style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{getTypeIcon(rec.type)}</span>
+                      <div>
+                        <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{rec.title}</h3>
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{rec.location}</p>
                       </div>
-                      <button className="p-2" style={{ color: 'var(--color-text-secondary)' }}>
-                        <Trash2 className="w-4 h-4" />
+                    </div>
+                    <button className="p-2" style={{ color: 'var(--color-text-secondary)' }}>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${i < (rec.rating || 0) ? 'text-yellow-400 fill-current' : ''}`}
+                          style={i < (rec.rating || 0) ? {} : { color: 'var(--color-text-secondary)' }}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{formatTimeAgo(rec.savedAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'profile' && (
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text-primary)' }}>Profile Settings</h2>
+            <div className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-sky-500 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{getDisplayName()}</h3>
+                  <p style={{ color: 'var(--color-text-secondary)' }}>
+                    {loading ? 'Loading...' : profile?.username ? `@${profile.username}` : 'User Profile'}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="rounded-xl p-4 transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}>
+                  <h4 className="font-medium mb-3" style={{ color: 'var(--color-text-primary)' }}>Preferences</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Email Notifications</span>
+                      <button className="relative w-12 h-6 bg-sky-500 rounded-full transition-colors duration-300">
+                        <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 transition-transform duration-300"></div>
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${i < (rec.rating || 0) ? 'text-yellow-400 fill-current' : ''}`}
-                            style={i < (rec.rating || 0) ? {} : { color: 'var(--color-text-secondary)' }}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{formatTimeAgo(rec.savedAt)}</span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Location Services</span>
+                      <button className="relative w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full transition-colors duration-300">
+                        <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5 transition-transform duration-300"></div>
+                      </button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {activeTab === 'profile' && (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text-primary)' }}>Profile Settings</h2>
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-sky-500 rounded-full flex items-center justify-center">
-                    <User className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>John Doe</h3>
-                    <p style={{ color: 'var(--color-text-secondary)' }}>john.doe@example.com</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="rounded-xl p-4 transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}>
-                    <h4 className="font-medium mb-3" style={{ color: 'var(--color-text-primary)' }}>Preferences</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span style={{ color: 'var(--color-text-secondary)' }}>Email Notifications</span>
-                        <button className="relative w-12 h-6 bg-sky-500 rounded-full transition-colors duration-300">
-                          <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 transition-transform duration-300"></div>
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span style={{ color: 'var(--color-text-secondary)' }}>Location Services</span>
-                        <button className="relative w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full transition-colors duration-300">
-                          <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5 transition-transform duration-300"></div>
-                        </button>
-                      </div>
+                    <div className="flex items-center justify-between">
                       <span style={{ color: 'var(--color-text-secondary)' }}>Dark Mode</span>
                       <button 
                         onClick={toggleTheme}
@@ -294,25 +277,25 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </div>
-                  
-                  <div className="rounded-xl p-4 transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}>
-                    <h4 className="font-medium mb-3" style={{ color: 'var(--color-text-primary)' }}>Account</h4>
-                    <div className="space-y-3">
-                      <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                        <Settings className="w-4 h-4" />
-                        <span>Account Settings</span>
-                      </button>
-                      <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                        <User className="w-4 h-4" />
-                        <span>Edit Profile</span>
-                      </button>
-                    </div>
+                </div>
+                
+                <div className="rounded-xl p-4 transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}>
+                  <h4 className="font-medium mb-3" style={{ color: 'var(--color-text-primary)' }}>Account</h4>
+                  <div className="space-y-3">
+                    <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                      <Settings className="w-4 h-4" />
+                      <span>Account Settings</span>
+                    </button>
+                    <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                      <User className="w-4 h-4" />
+                      <span>Edit Profile</span>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )
