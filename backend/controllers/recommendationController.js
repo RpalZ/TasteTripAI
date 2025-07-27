@@ -53,10 +53,13 @@ exports.recommend = async (req, res) => {
 
     //once auth is completed, add location to the extraction from the user profile
     const location = extraction.location;
+    
+    // Log location information
+    console.log('extracted location:', location);
+    console.log('entityType:', entityType);
+    console.log('entityNames:', entityNames);
 
     // Resolve entity names to Qloo entity IDs
-    console.log('entityType', entityType);
-    console.log('entityNames', entityNames); 
     const entityIds = await resolveEntityIds(entityNames, entityType, location);
     console.log('entityIds', entityIds);
     if (!entityIds.length) {
@@ -72,6 +75,9 @@ exports.recommend = async (req, res) => {
     // If the entity type is location-based and a location is present, add as signal.location.query
     if (["destination","place","location"].includes(entityType) && location) {
       params['signal.location.query'] = location;
+      console.log('Added location to Qloo params:', location);
+    } else {
+      console.log('No location added to Qloo params (entityType:', entityType, ', location:', location, ')');
     }
     const qlooResults = await getQlooRecommendations(params);
 
