@@ -23,7 +23,7 @@ ${similarStr}
 ${qlooStr}
 ${entityTypeStr}
 
-Based on this, write a personalized, engaging description for each recommendation, explaining why it is a great fit for the user. Output your response as a JSON array of natural language strings, one for each recommendation, in the same order as the Qloo list e.g { "recommendations": ["recommendation1", "recommendation2", "recommendation3"] }.`;
+Based on this, write a personalized, engaging 100 word description for each recommendation, explaining why it is a great fit for the user. Output your response as a JSON array of natural language strings, one for each recommendation, in the same order as the Qloo list e.g { "recommendations": ["recommendation1", "recommendation2", "recommendation3"] }.`;
 }
 
 module.exports = { buildRecommendationPrompt };

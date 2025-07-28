@@ -1,6 +1,71 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+
+// Add CSS keyframes for animations
+const animationStyles = `
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+`
 import ChatInput from '@/components/ChatInput'
 import MessageBubble from '@/components/MessageBubble'
 import RecommendationCard from '@/components/RecommendationCard'
@@ -48,6 +113,7 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ initialQuery, onBack, conversationId, onConversationCreated }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isRecommending, setIsRecommending] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const { theme } = useTheme();
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -96,6 +162,11 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
   useEffect(() => {
     console.log('Messages updated:', messages)
   }, [messages])
+
+  // Debug: log when isRecommending changes
+  useEffect(() => {
+    console.log('isRecommending changed:', isRecommending)
+  }, [isRecommending])
 
   //scroll to bottom of messages
   useEffect(() => {
@@ -212,16 +283,18 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
 
       const session = await supabase.auth.getSession()
       const token = session.data.session?.access_token
+      const header = {headers: {Authorization: `Bearer ${token}`}}
       //checking action and stuff bro
       switch (action) {
         case "recommend":
           // do some recommend api call to backend
           //api/recommend
-          console.trace('recommending some stuff aka calling backend')
+          console.trace('recommending...')
+          console.log('Setting isRecommending to true')
+          setIsRecommending(true)
 
           // use recommend query vro
           const payload = {input: recommendQuery}
-          const header = {headers: {Authorization: `Bearer ${token}`}}
           const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/taste`,
             payload,
             header
@@ -249,18 +322,20 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
           })
 
           setRecommendations(recommendationArr)
+          console.log('Setting isRecommending to false')
+          setIsRecommending(false)
           console.log(recommendations)
           break;
           case "analyze":
             // api/taste
             console.trace('analyzing stuff aka putting shit into vector db')
-          break;
-        case 'idle':
-          // do nothing continue the chat as a conversation
-          console.trace('doing nun js conversing yk me')
+          const response1 = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/taste`,
+            {input},
+            header
+          )
           break;
         default:
-          console.trace('unknown shit lmao wtf')
+          console.trace('idling')
           break;
       }
       
@@ -289,22 +364,25 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
     }
     setMessages(prev => [...prev, aiMessage])
     setIsLoading(false)
+    setIsRecommending(false)
   }
 
   //find the latest AI message with recommendations
   // const latestAIWithRecs = messages.slice().reverse().find(m => m.type === 'ai' && m.recommendations && m.recommendations.length > 0);
 
   return (
-    <div
-      style={{
-        background: 'var(--color-bg-primary)',
-        color: 'var(--color-text-primary)', 
-        position: 'relative',
-        minHeight: '100vh',
-        height: '100vh',
-      }}
-      className="flex w-full m-0 p-0 relative overflow-hidden min-h-screen"
-    >
+    <>
+      <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
+      <div
+        style={{
+          background: 'var(--color-bg-primary)',
+          color: 'var(--color-text-primary)', 
+          position: 'relative',
+          minHeight: '100vh',
+          height: '100vh',
+        }}
+        className="flex w-full m-0 p-0 relative overflow-hidden min-h-screen"
+      >
       {/* Subtle Radial Gradient Background for Chat Area */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div
@@ -323,18 +401,21 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
         />
       </div>
       {/* Main Two-Column Layout, flat and flush */}
-      <div className="flex flex-row w-full relative z-10 gap-4 md:flex-row flex-col flex-1 min-h-screen h-full" style={{
-        padding: '10px',
-        minHeight: 'calc(100vh - 10px)',
-        height: 'calc(100vh - 10px)',
-        // margin: '5px',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        background: 'var(--color-bg-primary)'
-      }}>
+      <div 
+        className="flex flex-row w-full relative z-10 gap-4 md:flex-row flex-col flex-1 min-h-screen h-full transform transition-all duration-700 ease-out"
+        style={{
+          padding: '10px',
+          minHeight: 'calc(100vh - 10px)',
+          height: 'calc(100vh - 10px)',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          background: 'var(--color-bg-primary)',
+          animation: 'fadeInUp 0.8s ease-out forwards'
+        }}
+      >
         {/* Chat Column, flat */}
         <div
-          className="flex flex-col basis-3/5 flex-grow min-w-0 bg-white min-h-0"
+          className="flex flex-col basis-3/5 flex-grow min-w-0 bg-white min-h-0 transform transition-all duration-500 ease-out"
           style={{
             background: 'var(--color-card-bg)',
             border: 'none',
@@ -344,6 +425,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
             padding: '10px',
             minHeight: 0,
             justifyContent: 'flex-start',
+            animation: 'slideInLeft 0.6s ease-out forwards'
           }}
         >
           {/* Header */}
@@ -363,7 +445,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
               {onBack && (
                 <button
                   onClick={onBack}
-                  className="p-2 rounded-xl transition-all duration-300 ease-in-out hover:scale-105"
+                  className="p-2 rounded-xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg transform hover:-translate-x-1"
                   style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)' }}
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -388,12 +470,13 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
                   }
                 ])
                 setRecommendations([])
+                setIsRecommending(false)
                 setShowHistory(false)
                 if (typeof window !== 'undefined') {
                   window.scrollTo(0, 0)
                 }
               }}
-              className="ml-4 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ease-in-out"
+              className="ml-4 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg transform hover:-translate-y-1"
               style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
             >
               New Conversation
@@ -403,17 +486,27 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
           {/* Messages */}
           <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-6">
             {messages.map((message, index) => (
-              <div key={message.id} className="message-enter" style={{ animationDelay: `${index * 100}ms` }}>
+              <div 
+                key={message.id} 
+                className="message-enter transform transition-all duration-500 ease-out"
+                style={{ 
+                  animationDelay: `${index * 150}ms`,
+                  animation: 'slideInUp 0.6s ease-out forwards'
+                }}
+              >
                 <MessageBubble message={message} />
               </div>
             ))}
             {isLoading && (
-              <div className="message-enter">
+              <div 
+                className="message-enter transform transition-all duration-500 ease-out"
+                style={{ animation: 'slideInUp 0.6s ease-out forwards' }}
+              >
                 <MessageBubble
                   message={{
                     id: 'loading',
                     type: 'ai',
-                    content: 'Analyzing your taste profile and finding perfect recommendations',
+                    content: 'Thinking',
                     timestamp: new Date()
                   }}
                   isLoading={true}
@@ -440,7 +533,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
         </div>
         {/* Recommendations Column, flat and scrollable */}
         <div
-          className="flex flex-col basis-2/5 flex-grow min-w-0 bg-white min-h-0"
+          className="flex flex-col basis-2/5 flex-grow min-w-0 bg-white min-h-0 transform transition-all duration-500 ease-out"
           style={{
             background: 'var(--color-card-bg)',
             border: 'none',
@@ -451,17 +544,45 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
             outline: '2px solid var(--color-card-border)',
             marginLeft: 0,
             borderLeft: 'none',
+            animation: 'slideInRight 0.6s ease-out forwards'
           }}
         >
           <div style={{padding: '2rem 2rem 1.5rem 2rem', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1}}>
             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Recommendations</h2>
             <div className="flex-1 min-h-0 overflow-y-auto">
-              {recommendations.length > 0 ? (
+              {isRecommending ? (
+                <div 
+                  className="flex items-center justify-center text-gray-400 h-full transform transition-all duration-500 ease-out"
+                  style={{ 
+                    minHeight: '200px', 
+                    color: 'var(--color-text-secondary)',
+                    animation: 'pulse 1.5s ease-in-out infinite'
+                  }}
+                >
+                  Finding recommendations for you...
+                </div>
+              ) : recommendations.length > 0 ? (
                 recommendations.map((rec, recIndex) => (
-                  <RecommendationCard key={recIndex} recommendation={rec} />
+                  <div
+                    key={recIndex}
+                    className="transform transition-all duration-700 ease-out"
+                    style={{
+                      animationDelay: `${recIndex * 200}ms`,
+                      animation: 'slideInRight 0.8s ease-out forwards'
+                    }}
+                  >
+                    <RecommendationCard recommendation={rec} />
+                  </div>
                 ))
               ) : (
-                <div className="flex items-center justify-center text-gray-400 h-full" style={{ minHeight: '200px', color: 'var(--color-text-secondary)' }}>
+                <div 
+                  className="flex items-center justify-center text-gray-400 h-full transform transition-all duration-500 ease-out"
+                  style={{ 
+                    minHeight: '200px', 
+                    color: 'var(--color-text-secondary)',
+                    animation: 'fadeIn 0.8s ease-out forwards'
+                  }}
+                >
                   Recommendations will appear here.
                 </div>
               )}
@@ -470,5 +591,6 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
         </div>
       </div>
     </div>
+    </>
   )
 }
