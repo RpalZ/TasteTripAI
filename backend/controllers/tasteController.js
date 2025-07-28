@@ -44,20 +44,25 @@ exports.getSimilarTastes = async (req, res) => {
     const TOP_N = 3;
     if (!id) return res.status(400).json({ error: 'id is required' });
 
-    // Fetch the target embedding by ID
+    // Get user ID from JWT
+    const userId = req.user.sub;
+
+    // Fetch the target embedding by ID (ensure user owns it)
     const { data: targetData, error: targetError } = await supabase
       .from('user_tastes')
       .select('embedding')
       .eq('id', id)
+      .eq('user_id', userId) // Ensure user owns this taste entry
       .single();
     if (targetError || !targetData) throw targetError || new Error('Embedding not found');
     const targetEmbedding = targetData.embedding;
 
-    // Run pgvector similarity query (cosine distance)
+    // Run pgvector similarity query (cosine distance) - only from same user
     const { data: similarData, error: similarError } = await supabase.rpc('match_user_tastes', {
       query_embedding: targetEmbedding,
       match_count: TOP_N,
       exclude_id: id,
+      user_id: userId, // Pass user_id to filter by same user
     });
     if (similarError) throw similarError;
 

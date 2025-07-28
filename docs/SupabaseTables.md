@@ -12,7 +12,7 @@ This document describes the main Supabase tables used in TasteTrip AI, including
 ```sql
 create table if not exists user_tastes (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id),
+  user_id uuid references auth.users(id) not null,
   input text,
   embedding vector(1536),
   timestamp timestamptz default now()
@@ -119,6 +119,58 @@ create policy "Users can create their own profile" on user_profile
   for insert with check (auth.uid() = id);
 create policy "Users can update their own profile" on user_profile
   for update using (auth.uid() = id);
+```
+
+---
+
+## 4. `conversations` and `chats` (Chat Sessions & Messages)
+
+**Purpose:** Stores chat sessions (conversations) and individual chat messages, supporting message context, grouping, and threading.
+
+**Schema:**
+```sql
+create table if not exists conversations (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists chats (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid references conversations(id) not null,
+  user_id uuid references auth.users(id) not null,
+  message text not null,
+  sender_type text not null, -- 'user' or 'ai'
+  parent_message_id uuid references chats(id), -- for threading (optional)
+  created_at timestamptz default now()
+);
+```
+
+**Fields:**
+- `conversations.id`: Unique conversation/session ID
+- `conversations.user_id`: References the authenticated user (from Supabase Auth)
+- `conversations.created_at`: When the conversation was started
+- `chats.id`: Unique message ID
+- `chats.conversation_id`: References the conversation/session
+- `chats.user_id`: References the authenticated user (from Supabase Auth)
+- `chats.message`: The chat message content
+- `chats.sender_type`: Who sent the message (`'user'` or `'ai'`)
+- `chats.parent_message_id`: (Optional) For threaded replies
+- `chats.created_at`: When the message was sent
+
+**RLS Policies:**
+```sql
+alter table conversations enable row level security;
+create policy "Users can view their own conversations" on conversations
+  for select using (auth.uid() = user_id);
+create policy "Users can insert their own conversations" on conversations
+  for insert with check (auth.uid() = user_id);
+
+alter table chats enable row level security;
+create policy "Users can view their own chats" on chats
+  for select using (auth.uid() = user_id);
+create policy "Users can insert their own chats" on chats
+  for insert with check (auth.uid() = user_id);
 ```
 
 ---

@@ -168,6 +168,41 @@ create policy "Users can update their own profile" on user_profile
 - Auth state is managed client-side and checked on every request.
 - Onboarding status is checked via the `user_profile` table.
 
+## Performance Optimizations
+
+The recommendation system has been optimized for faster response times:
+
+### Response Limits
+- **Qloo API Results**: Limited to 8 recommendations per request
+- **Entity Resolution**: Reduced to 3 entities per search term
+- **Similar Tastes**: Limited to 6 similar entries for context
+
+### Performance Benefits
+- **Faster API Calls**: Reduced data transfer and processing time
+- **Quicker GPT Processing**: Smaller prompts with fewer results
+- **Better User Experience**: Faster response times
+- **Reduced Costs**: Fewer API calls and tokens used
+
+## Entity Name Cleaning
+
+The system now includes intelligent entity name cleaning and contextualization:
+
+### `cleanEntityNames()` Function
+- **Purpose**: Cleans and contextualizes entity names based on user query and taste history
+- **Input**: Raw entity names, user query, similar taste entries
+- **Output**: Cleaned, relevant entity names optimized for recommendation systems
+- **Features**:
+  - Removes generic terms (e.g., "restaurant", "place")
+  - Adds context from user's taste history
+  - Makes names more searchable and specific
+  - Ensures names are concise but descriptive
+
+### Examples of Entity Name Cleaning:
+- `["Italian restaurant"]` → `["Italian cuisine", "Italian dining"]`
+- `["jazz music"]` → `["jazz", "jazz artists"]`
+- `["New York"]` → `["New York City", "NYC"]`
+- `["action movie"]` → `["action films", "action cinema"]`
+
 ## Next Steps
 - Implement `/api/recommend` and `/api/booking` endpoints
 - Integrate Qloo and Google Maps APIs
@@ -180,6 +215,7 @@ create policy "Users can update their own profile" on user_profile
 ```sql
 create table if not exists user_tastes (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) not null,
   input text,
   embedding vector(1536),
   timestamp timestamptz default now()
@@ -193,26 +229,32 @@ create extension if not exists vector;
 
 ### Similarity Function: match_user_tastes
 ```sql
--- Returns the top N most similar user_tastes entries (excluding the given id)
+-- Returns the top N most similar user_tastes entries for the same user (excluding the given id)
 create or replace function match_user_tastes(
   query_embedding vector(1536),
   match_count int,
-  exclude_id uuid
+  exclude_id uuid,
+  user_id uuid
 )
 returns table (
   id uuid,
   input text,
   embedding vector(1536),
-  timestamp timestamptz,
+  created_at timestamptz,
   similarity float
 ) language plpgsql as $$
 begin
   return query
-    select id, input, embedding, timestamp,
-      (embedding <#> query_embedding) as similarity
+    select 
+      user_tastes.id, 
+      user_tastes.input, 
+      user_tastes.embedding, 
+      user_tastes.timestamp,
+      (user_tastes.embedding <#> query_embedding) as similarity
     from user_tastes
-    where id != exclude_id
-    order by embedding <#> query_embedding
+    where user_tastes.id != exclude_id
+      and user_tastes.user_id = match_user_tastes.user_id
+    order by user_tastes.embedding <#> query_embedding
     limit match_count;
 end;
 $$;
@@ -220,3 +262,56 @@ $$;
 
 - `<#>` is the cosine distance operator in pgvector.
 - Adjust `vector(1536)` if your embedding size changes. 
+
+---
+
+## 🎯 **Comprehensive System Summary**
+
+### **Backend Improvements**
+
+#### **🔐 User Authentication & Security**
+- **Updated `match_user_tastes` function** to include `user_id` parameter
+- **Modified recommendation controller** to filter by user ID
+- **Enhanced taste controller** to ensure user ownership
+- **Added user isolation** - users can only see their own taste data
+
+#### **🚀 Performance Optimizations**
+- **Limited Qloo results** to 8 recommendations per request
+- **Reduced entity resolution** from 4 to 3 entities per search term
+- **Added API limit parameter** (`limit: 8`) to Qloo calls
+- **Faster response times** and reduced costs
+
+#### **🧠 AI Entity Processing**
+- **Enhanced `extractEntitiesWithGPT`** function with better entity extraction
+- **Added `cleanEntityNames`** function for contextual entity cleaning
+- **Improved entity name relevance** based on user query and taste history
+- **Better entity type classification** for Qloo API compatibility
+
+#### **📊 Enhanced Logging**
+- **Added location logging** in recommendation controller
+- **Debug console logs** for entity extraction and processing
+- **Better error tracking** and debugging capabilities
+
+### **Database Schema Changes**
+
+#### **🗄️ Supabase Updates**
+- **Updated `user_tastes` table** to include `user_id` field
+- **Enhanced RPC function** with user filtering
+- **Better data isolation** between users
+
+### **Key Achievements**
+
+#### **Performance**
+- ⚡ **Faster API responses** (limited to 8 results)
+- 💰 **Reduced costs** (fewer API calls)
+- 🚀 **Better caching** and optimization
+
+#### **Security**
+- 🔒 **User data isolation** (proper user filtering)
+- 🛡️ **Authentication enforcement** (JWT validation)
+- 🔐 **Ownership validation** (user can only access their own data)
+
+#### **AI Intelligence**
+- 🧠 **Smarter entity extraction** and cleaning
+- 🎯 **Focused recommendation scope** (9 entity types)
+- 💬 **Better conversation flow** with appropriate actions

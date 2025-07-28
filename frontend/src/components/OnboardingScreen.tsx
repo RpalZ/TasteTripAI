@@ -98,7 +98,7 @@ export default function OnboardingScreen({ onComplete, userID }: OnboardingScree
           className="w-full max-w-sm rounded-2xl shadow-lg p-8 flex flex-col items-center"
           style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-card-border)' }}
         >
-          <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>How should we call you?</h2>
+          <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>What should we call you?</h2>
           <input
             type="text"
             value={username}

@@ -16,24 +16,30 @@ exports.recommend = async (req, res) => {
     const { embedding_id } = req.body;
     if (!embedding_id) return res.status(400).json({ error: 'embedding_id is required' });
 
+    // Get user ID from JWT
+    const userId = req.user.sub;
+
     // Fetch original taste input
     const { data: tasteData, error: tasteError } = await supabase
       .from('user_tastes')
       .select('input')
       .eq('id', embedding_id)
+      .eq('user_id', userId) // Ensure user owns this taste entry
       .single();
     if (tasteError || !tasteData) throw tasteError || new Error('Taste input not found');
     const userInput = tasteData.input;
 
-    // Fetch top 6 similar tastes
+    // Fetch top 6 similar tastes from the same user
     const { data: similarData, error: similarError } = await supabase.rpc('match_user_tastes', {
       query_embedding: (await supabase
         .from('user_tastes')
         .select('embedding')
         .eq('id', embedding_id)
+        .eq('user_id', userId) // Ensure user owns this taste entry
         .single()).data.embedding,
       match_count: 6,
       exclude_id: embedding_id,
+      user_id: userId, // Pass user_id to filter by same user
     });
     if (similarError) throw similarError;
     const similarEntries = (similarData || []).map(e => e.input);
@@ -47,10 +53,13 @@ exports.recommend = async (req, res) => {
 
     //once auth is completed, add location to the extraction from the user profile
     const location = extraction.location;
+    
+    // Log location information
+    console.log('extracted location:', location);
+    console.log('entityType:', entityType);
+    console.log('entityNames:', entityNames);
 
     // Resolve entity names to Qloo entity IDs
-    console.log('entityType', entityType);
-    console.log('entityNames', entityNames); 
     const entityIds = await resolveEntityIds(entityNames, entityType, location);
     console.log('entityIds', entityIds);
     if (!entityIds.length) {
@@ -60,16 +69,23 @@ exports.recommend = async (req, res) => {
     // Build Qloo API params
     const params = {
       'filter.type': `urn:entity:${entityType}`,
-      'signal.interests.entities': entityIds.join(',')
+      'signal.interests.entities': entityIds.join(','),
+      'limit': 8 // Limit results to 8 for better performance
     };
     // If the entity type is location-based and a location is present, add as signal.location.query
     if (["destination","place","location"].includes(entityType) && location) {
       params['signal.location.query'] = location;
+      console.log('Added location to Qloo params:', location);
+    } else {
+      console.log('No location added to Qloo params (entityType:', entityType, ', location:', location, ')');
     }
     const qlooResults = await getQlooRecommendations(params);
 
+    // Limit results to 8 recommendations for better performance
+    const limitedResults = qlooResults.slice(0, 8);
+
     // Build GPT prompt
-    const prompt = buildRecommendationPrompt(userInput, similarEntries, qlooResults, entityType);
+    const prompt = buildRecommendationPrompt(userInput, similarEntries, limitedResults, entityType);
 
     // Call OpenAI GPT-4 for explanation/formatting
     const gptResponse = await openai.chat.completions.create({
@@ -90,7 +106,7 @@ exports.recommend = async (req, res) => {
     // console.trace(explanationArr);
     // Return both raw and formatted results
     return res.json({
-      results: qlooResults,
+      results: limitedResults,
       explanation: explanationArr,
     });
   } catch (err) {

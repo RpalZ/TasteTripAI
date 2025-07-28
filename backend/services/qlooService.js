@@ -49,9 +49,9 @@ async function resolveEntityIds(names, type = 'movie', location) {
           'x-api-key': QLOO_API_KEY,
         },
       });
-      // Collect up to 4 entity_ids from the results array
+      // Collect up to 3 entity_ids from the results array (reduced for better performance)
       const entities = response.data.results || [];
-      for (let i = 0; i < Math.min(4, entities.length); i++) {
+      for (let i = 0; i < Math.min(3, entities.length); i++) {
         const entity = entities[i]?.entity_id;
         if (entity) results.push(entity);
       }

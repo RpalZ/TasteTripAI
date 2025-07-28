@@ -32,6 +32,12 @@ html {
   --color-accent-tertiary-bg: #cffafe; /* cyan-100 */
   --color-accent-tertiary-bg2: #a5f3fc; /* cyan-200 */
   --color-tastehistory-query: #374151; /* Tailwind gray-700 */
+  /* Neon/Glow accent variables for chat UI */
+  --color-accent-glow: 0 0 16px 2px #0ea5e9, 0 0 32px 4px #38bdf8;
+  --color-user-glow: 0 0 12px 2px #0ea5e9;
+  --color-ai-glow: 0 0 12px 2px #a855f7;
+  --color-card-glass: rgba(255,255,255,0.7);
+  --color-card-glass-blur: blur(16px);
 }
 html.dark {
   --color-bg-primary: #111827; /* gray-900 */
@@ -59,6 +65,12 @@ html.dark {
   --color-accent-tertiary-bg: #164e63;
   --color-accent-tertiary-bg2: #0e7490;
   --color-tastehistory-query: #d1d5db; /* Tailwind gray-300 */
+  /* Neon/Glow accent variables for chat UI (dark) */
+  --color-accent-glow: 0 0 24px 4px #38bdf8, 0 0 48px 8px #0ea5e9;
+  --color-user-glow: 0 0 16px 3px #38bdf8;
+  --color-ai-glow: 0 0 16px 3px #a855f7;
+  --color-card-glass: rgba(30,41,59,0.7);
+  --color-card-glass-blur: blur(18px);
 }
 
 @import "tailwindcss";

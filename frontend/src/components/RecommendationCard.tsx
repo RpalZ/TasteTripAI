@@ -70,14 +70,24 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
   }
 
   return (
-    <div style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }} className="p-6 group rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out">
+    <div style={{
+      background: 'var(--color-card-bg)',
+      color: 'var(--color-text-primary)',
+      border: '1px solid var(--color-card-border)',
+      borderRadius: '1rem',
+      boxShadow: '0 1px 4px 0 rgba(0,0,0,0.04)',
+      position: 'relative',
+      overflow: 'hidden',
+      padding: '1.5rem',
+      marginBottom: '1rem',
+    }} className="group transition-all duration-300 ease-in-out">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <span className="text-2xl">{getCategoryIcon(recommendation.type)}</span>
+          <span className="text-2xl" style={{ color: 'var(--color-accent)' }}>{getCategoryIcon(recommendation.type)}</span>
           <div>
-            <h3 className="font-semibold transition-colors" style={{ color: 'var(--color-text-primary)' }}>{recommendation.title}</h3>
-            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(recommendation.type)}`}>{recommendation.type}</span>
+            <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{recommendation.title}</h3>
+            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium`} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}>{recommendation.type}</span>
           </div>
         </div>
         <button
@@ -99,7 +109,12 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
         {(recommendation.location || (recommendation.lat && recommendation.lng)) && (
           <button
             onClick={handleBooking}
-            className="btn-primary flex-1 flex items-center justify-center space-x-2 text-sm"
+            className="flex-1 flex items-center justify-center space-x-2 text-sm rounded-xl px-4 py-2 font-semibold transition-all duration-300 ease-in-out"
+            style={{
+              background: 'var(--color-accent)',
+              color: 'var(--color-on-accent)',
+              border: 'none',
+            }}
           >
             <MapPin className="w-4 h-4" />
             <span>View on Maps</span>
