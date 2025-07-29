@@ -119,7 +119,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
   const { theme } = useTheme();
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
-
+  const hasSentInitialQuery = useRef(false); // <-- add this
 
 
   useEffect(() => {
@@ -398,8 +398,61 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
     setIsRecommending(false)
   }
 
+  // Automatically send initialQuery as the first user message if present
+  useEffect(() => {
+    if (initialQuery && !hasSentInitialQuery.current && messages.length === 0) {
+      hasSentInitialQuery.current = true;
+      handleUserInput(initialQuery);
+    }
+  }, [initialQuery, messages.length]);
+
   //find the latest AI message with recommendations
   // const latestAIWithRecs = messages.slice().reverse().find(m => m.type === 'ai' && m.recommendations && m.recommendations.length > 0);
+
+  // Delete conversation handler
+  const handleDeleteConversation = async () => {
+    if (!conversationId) return;
+    const confirmed = window.confirm('Are you sure you want to delete this conversation? This cannot be undone.');
+    if (!confirmed) return;
+    
+    try {
+      // Delete the conversation itself (this should cascade delete all related messages)
+      const { error } = await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversationId);
+      
+      if (error) {
+        console.error('❌ Error deleting conversation:', error);
+        alert('Failed to delete conversation. Please try again.');
+        return;
+      }
+      
+      console.log('✅ Conversation deleted successfully');
+      
+      // Reset UI
+      setMessages([
+        {
+          id: '1',
+          type: 'ai',
+          content: "Hello! I'm your cultural discovery assistant. Tell me about your tastes - what kind of food, music, places, or experiences do you enjoy? I'll help you discover amazing cultural recommendations tailored just for you! ✨",
+          timestamp: new Date(),
+        }
+      ]);
+      setRecommendations([]);
+      setIsRecommending(false);
+      setShowHistory(false);
+      if (onConversationCreated) {
+        onConversationCreated('');
+      }
+      if (typeof window !== 'undefined') {
+        window.scrollTo(0, 0);
+      }
+    } catch (error) {
+      console.error('❌ Error in handleDeleteConversation:', error);
+      alert('Failed to delete conversation. Please try again.');
+    }
+  };
 
   return (
     <>
@@ -490,29 +543,87 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
                 <p className="text-base font-medium" style={{ color: 'var(--color-text-secondary)' }}>Your Cultural Discovery Assistant</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                setMessages([
-                  {
-                    id: '1',
-                    type: 'ai',
-                    content: "Hello! I'm your cultural discovery assistant. Tell me about your tastes - what kind of food, music, places, or experiences do you enjoy? I'll help you discover amazing cultural recommendations tailored just for you! ✨",
-                    timestamp: new Date(),
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleDeleteConversation}
+                className="ml-2 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg transform hover:-translate-y-1"
+                style={{ background: 'var(--color-danger, #e53e3e)', color: '#fff' }}
+                disabled={!conversationId}
+                title="Delete Conversation"
+              >
+                Delete Conversation
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    // Get user ID from Supabase session
+                    const { data: sessionData } = await supabase.auth.getSession();
+                    if (!sessionData.session) {
+                      alert('Please log in to create a new conversation.');
+                      return;
+                    }
+                    
+                    // Create a new conversation in the database
+                    const { data: newConv, error: convError } = await supabase
+                      .from('conversations')
+                      .insert([{ user_id: sessionData.session.user.id }])
+                      .select('id')
+                      .single();
+                    
+                    if (convError || !newConv) {
+                      console.error('Error creating new conversation:', convError);
+                      alert('Failed to create new conversation. Please try again.');
+                      return;
+                    }
+                    
+                    console.log('✅ New conversation created:', newConv.id);
+                    
+                    // Create the welcome message
+                    const welcomeMessage = {
+                      id: '1',
+                      type: 'ai' as 'ai',
+                      content: "Hello! I'm your cultural discovery assistant. Tell me about your tastes - what kind of food, music, places, or experiences do you enjoy? I'll help you discover amazing cultural recommendations tailored just for you! ✨",
+                      timestamp: new Date(),
+                    };
+                    
+                    // Save welcome message to database
+                    await supabase
+                      .from('chats')
+                      .insert([
+                        {
+                          conversation_id: newConv.id,
+                          user_id: sessionData.session.user.id,
+                          message: welcomeMessage.content,
+                          sender_type: 'ai',
+                        }
+                      ]);
+                    
+                    // Reset UI with welcome message
+                    setMessages([welcomeMessage]);
+                    setRecommendations([]);
+                    setIsRecommending(false);
+                    setShowHistory(false);
+                    
+                    // Update the conversation ID in parent component
+                    if (onConversationCreated) {
+                      onConversationCreated(newConv.id);
+                    }
+                    
+                    if (typeof window !== 'undefined') {
+                      window.scrollTo(0, 0);
+                    }
+                  } catch (error) {
+                    console.error('Error creating new conversation:', error);
+                    alert('Failed to create new conversation. Please try again.');
                   }
-                ])
-                setRecommendations([])
-                setIsRecommending(false)
-                setShowHistory(false)
-                if (typeof window !== 'undefined') {
-                  window.scrollTo(0, 0)
-                }
-              }}
-              className="ml-4 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg transform hover:-translate-y-1"
-              style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
-            >
-              New Conversation
-            </button>
-            <div style={{ width: 40 }} /> {/* Placeholder for alignment */}
+                }}
+                className="ml-4 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg transform hover:-translate-y-1"
+                style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
+              >
+                New Conversation
+              </button>
+              <div style={{ width: 40 }} /> {/* Placeholder for alignment */}
+            </div>
           </header>
           {/* Messages */}
           <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-6">

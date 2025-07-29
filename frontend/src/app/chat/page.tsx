@@ -17,6 +17,7 @@ export default function ChatPage() {
   const [hasConversations, setHasConversations] = useState(false);
   const [conversations, setConversations] = useState<any[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [initialQuery, setInitialQuery] = useState<string>(''); // Add this state
 
   useEffect(() => {
     const checkAuthAndConversations = async () => {
@@ -51,6 +52,89 @@ export default function ChatPage() {
     setSelectedConversationId(conversationId);
   };
 
+  // Add handler for ChatWelcome onStart
+  const handleStartChat = (input?: string) => {
+    if (input) {
+      setInitialQuery(input);
+    }
+    setHasStartedChat(true);
+  };
+
+  // Add delete conversation handler
+  const handleDeleteConversation = async (conversationId: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this conversation? This cannot be undone.');
+    if (!confirmed) return;
+    
+    console.log('🗑️ Deleting conversation:', conversationId);
+    
+    try {
+      // First, check if the conversation exists
+      const { data: existingConv, error: checkError } = await supabase
+        .from('conversations')
+        .select('id, user_id')
+        .eq('id', conversationId)
+        .single();
+      
+      if (checkError || !existingConv) {
+        console.error('❌ Conversation not found or error checking:', checkError);
+        alert('Conversation not found or you do not have permission to delete it.');
+        return;
+      }
+      
+      console.log('✅ Conversation found:', existingConv);
+      
+      // Check if user owns this conversation
+      const { data: session } = await supabase.auth.getSession();
+      if (session.session && existingConv.user_id !== session.session.user.id) {
+        console.error('❌ User does not own this conversation');
+        alert('You do not have permission to delete this conversation.');
+        return;
+      }
+      
+      // Delete the conversation itself (this should cascade delete all related messages)
+      const { error: conversationError } = await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversationId);
+      
+      console.log('🗑️ Delete result - error:', conversationError);
+      
+      if (conversationError) {
+        console.error('❌ Error deleting conversation:', conversationError);
+        throw conversationError;
+      }
+      
+      console.log('✅ Conversation deleted successfully');
+      
+      // Refresh conversations list
+      if (session.session) {
+        console.log('🔄 Refreshing conversations list...');
+        const { data: conversations, error } = await supabase
+          .from('conversations')
+          .select('id, created_at')
+          .eq('user_id', session.session.user.id)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('❌ Error fetching conversations:', error);
+          throw error;
+        }
+        
+        console.log('📋 Updated conversations:', conversations);
+        setHasConversations(!!conversations && conversations.length > 0);
+        setConversations(conversations || []);
+        
+        // If the deleted conversation was selected, clear the selection
+        if (selectedConversationId === conversationId) {
+          setSelectedConversationId(null);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error in handleDeleteConversation:', error);
+      alert('Failed to delete conversation. Please try again.');
+    }
+  };
+
   if (loading) return null;
 
   // Show conversation list if user has conversations and hasn't started a chat yet
@@ -69,19 +153,35 @@ export default function ChatPage() {
             <ul className="space-y-4">
               {conversations.map((conv) => (
                 <li key={conv.id}>
-                  <button
-                    className="w-full text-left px-4 py-3 rounded-xl transition-all font-medium"
+                  <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all font-medium"
                     style={{ 
                       color: 'var(--color-text-primary)',
                       background: 'var(--color-bg-secondary)',
-                    }}
-                    onClick={() => {
-                      setSelectedConversationId(conv.id)
-                      setHasStartedChat(true)
-                    }}
-                  >
-                    Conversation started {new Date(conv.created_at).toLocaleString()}
-                  </button>
+                    }}>
+                    <button
+                      className="flex-1 text-left"
+                      onClick={() => {
+                        setSelectedConversationId(conv.id)
+                        setHasStartedChat(true)
+                      }}
+                    >
+                      Conversation started {new Date(conv.created_at).toLocaleString()}
+                    </button>
+                    <button
+                      className="ml-2 px-3 py-1 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out hover:scale-105"
+                      style={{ 
+                        background: 'var(--color-danger, #e53e3e)', 
+                        color: '#fff' 
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteConversation(conv.id);
+                      }}
+                      title="Delete Conversation"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -110,9 +210,14 @@ export default function ChatPage() {
         router.push('/auth');
       }} />
       {!hasStartedChat ? (
-        <ChatWelcome onStart={() => setHasStartedChat(true)} hasConversations={hasConversations} />
+        <ChatWelcome onStart={handleStartChat} hasConversations={hasConversations} />
       ) : (
-        <ChatInterface onBack={handleBack} conversationId={selectedConversationId} onConversationCreated={handleConversationCreated} />
+        <ChatInterface 
+          initialQuery={initialQuery} 
+          onBack={handleBack} 
+          conversationId={selectedConversationId} 
+          onConversationCreated={handleConversationCreated} 
+        />
       )}
     </div>
   );
