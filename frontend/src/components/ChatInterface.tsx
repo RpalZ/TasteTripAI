@@ -295,19 +295,44 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
 
           // use recommend query vro
           const payload = {input: recommendQuery}
-          const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/taste`,
-            payload,
-            header
-          )
-          const embed = response.data
-          console.trace(embed)
+          const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/taste`
+          console.log('POST', endpoint, 'payload:', payload, 'headers:', header)
+          let embed;
+          try {
+            const response = await axios.post(endpoint, payload, header)
+            embed = response.data
+            console.trace('Taste embedding response:', embed)
+          } catch (error: any) {
+            if (error.response) {
+              console.error('Taste API 400 error:', error.response.data)
+              aiContent = `Sorry, there was a problem with your request: ${error.response.data.error || 'Bad Request'}`
+            } else {
+              console.error('Taste API error:', error)
+              aiContent = 'Sorry, there was an error connecting to the taste API.'
+            }
+            setIsLoading(false)
+            setIsRecommending(false)
+            break;
+          }
 
           //now to do the recommendation type shi fye
-
-          const recommendResponse = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/recommend`,
-            embed,
-            header
-          )
+          const recEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/recommend`
+          console.log('POST', recEndpoint, 'payload:', embed, 'headers:', header)
+          let recommendResponse;
+          try {
+            recommendResponse = await axios.post(recEndpoint, embed, header)
+          } catch (error: any) {
+            if (error.response) {
+              console.error('Recommend API 400 error:', error.response.data)
+              aiContent = `Sorry, there was a problem with recommendations: ${error.response.data.error || 'Bad Request'}`
+            } else {
+              console.error('Recommend API error:', error)
+              aiContent = 'Sorry, there was an error connecting to the recommendation API.'
+            }
+            setIsLoading(false)
+            setIsRecommending(false)
+            break;
+          }
           //set up recommendations  
           aiContent = "Here are your recommendations!"
           const recommendationArr = recommendResponse.data.results?.map((m: any, i: number) => {
