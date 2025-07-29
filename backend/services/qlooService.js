@@ -37,6 +37,7 @@ async function getQlooRecommendations(params) {
       resultsCount: response.data.results?.entities?.length || 0,
       hasResults: !!response.data.results?.entities
     });
+    console.log('📄 Full Qloo API Response:', JSON.stringify(response.data, null, 2));
     
     // Log detailed results if available
     if (response.data.results?.entities && response.data.results.entities.length > 0) {
@@ -49,6 +50,12 @@ async function getQlooRecommendations(params) {
           properties: entity.properties ? Object.keys(entity.properties) : 'none'
         });
       });
+    } else {
+      console.log('⚠️  No entities in response. Full response structure:');
+      console.log('  Results object:', response.data.results);
+      console.log('  Results.entities:', response.data.results?.entities);
+      console.log('  Results.entities length:', response.data.results?.entities?.length);
+      console.log('  Raw response data keys:', Object.keys(response.data));
     }
     
     // Qloo returns results.entities array
@@ -85,11 +92,12 @@ async function getQlooRecommendations(params) {
  * @param {string[]} names - Array of entity names (e.g., movie titles)
  * @param {string} type - Entity type (e.g., 'movie')
  * @param {string} location - Location name (e.g., 'United States', 'New York City', 'Los Angeles')
- * @returns {Promise<string[]>} Array of Qloo entity IDs
+ * @returns {Promise<{entityIds: string[], entityDetails: Array}>} Array of Qloo entity IDs and details
  */
 async function resolveEntityIds(names, type = 'movie', location) {
   console.log('🔍 Resolving entity IDs for:', { names, type, location });
   const results = [];
+  const entityDetails = [];
   
   for (const name of names) {
     try {
@@ -100,6 +108,9 @@ async function resolveEntityIds(names, type = 'movie', location) {
       // Add location param if provided (Qloo search API supports countries, cities, and localities)
       if (location) {
         params.location = location; // Supports countries, cities, neighborhoods (e.g., 'United States', 'New York City', 'Lower East Side')
+        console.log(`    📍 Using location filter: "${location}" for entity search`);
+      } else {
+        console.log(`    🌍 No location filter applied for entity search`);
       }
       
       console.log(`  🔎 Searching for: "${name}" (type: ${type})${location ? ` in ${location}` : ''}`);
@@ -117,9 +128,19 @@ async function resolveEntityIds(names, type = 'movie', location) {
       
       for (let i = 0; i < Math.min(3, entities.length); i++) {
         const entity = entities[i]?.entity_id;
+        const entityName = entities[i]?.name || 'unnamed';
+        const entityLocation = entities[i]?.location || 'no location';
+        
         if (entity) {
           results.push(entity);
-          console.log(`    ✅ Added entity ID: ${entity} (${entities[i]?.name || 'unnamed'})`);
+          entityDetails.push({
+            entity_id: entity,
+            name: entityName,
+            location: entityLocation,
+            subtype: entities[i]?.subtype || `urn:entity:${type}`,
+            properties: entities[i]?.properties || {}
+          });
+          console.log(`    ✅ Added entity ID: ${entity} (${entityName}) - Location: ${entityLocation}`);
         }
       }
     } catch (err) {
@@ -128,8 +149,20 @@ async function resolveEntityIds(names, type = 'movie', location) {
     }
   }
   
-  console.log('🎯 Final resolved entity IDs:', results);
-  return results;
+  // Remove duplicates while preserving order
+  const uniqueResults = [...new Set(results)];
+  console.log('🎯 Final resolved entity IDs:', uniqueResults);
+  console.log('🔄 Removed duplicates:', results.length - uniqueResults.length);
+  
+  // Remove duplicate entity details as well
+  const uniqueEntityDetails = entityDetails.filter((detail, index) => 
+    uniqueResults.indexOf(detail.entity_id) === index
+  );
+  
+  return {
+    entityIds: uniqueResults,
+    entityDetails: uniqueEntityDetails
+  };
 }
 
 module.exports = { getQlooRecommendations, resolveEntityIds };

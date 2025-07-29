@@ -122,6 +122,20 @@ Respond in JSON:
   
   // Filter out overly broad locations (continents, very broad regions)
   const broadLocations = ['asia', 'europe', 'africa', 'north america', 'south america', 'australia', 'antarctica', 'middle east', 'central america', 'caribbean'];
+  
+  // Define continent expansions - just countries, let Qloo handle entity types
+  const continentExpansions = {
+    'asia': {
+      countries: ['China', 'Japan', 'Thailand', 'Korea', 'Vietnam', 'India']
+    },
+    'europe': {
+      countries: ['France', 'Italy', 'Spain', 'Germany', 'Netherlands', 'Switzerland']
+    },
+    'africa': {
+      countries: ['Morocco', 'Ethiopia', 'South Africa', 'Egypt']
+    }
+  };
+  
   let location = extraction.location;
   let locationArray = null; // New array for multiple locations
   
@@ -148,13 +162,11 @@ Respond in JSON:
       console.log('🌍 Found continents in location array:', continentLocations);
       // Process continent expansion for each continent in the array
       const expandedCountries = [];
-      const expandedCuisines = [];
       
       continentLocations.forEach(continent => {
         const expansion = continentExpansions[continent.toLowerCase()];
         if (expansion) {
           expandedCountries.push(...expansion.countries);
-          expandedCuisines.push(...expansion.cuisines);
         }
       });
       
@@ -163,38 +175,18 @@ Respond in JSON:
         !broadLocations.includes(loc.toLowerCase())
       ).concat(expandedCountries);
       
-      // Add expanded cuisines
-      extraction.entity_names = [...extraction.entity_names, ...expandedCuisines];
-      
       console.log('🔄 Final expanded location array:', locationArray);
     }
     
     location = null; // Clear single location since we have an array
   } else if (location && broadLocations.includes(location.toLowerCase())) {
-    // Instead of filtering out, expand into cultural entities and tags
-    const continentExpansions = {
-      'asia': {
-        cuisines: ['Asian cuisine', 'Chinese restaurants', 'Japanese restaurants', 'Thai restaurants', 'Korean restaurants', 'Vietnamese restaurants', 'Indian restaurants'],
-        countries: ['China', 'Japan', 'Thailand', 'Korea', 'Vietnam', 'India']
-      },
-      'europe': {
-        cuisines: ['European cuisine', 'Italian restaurants', 'French restaurants', 'Spanish restaurants', 'German restaurants'],
-        countries: ['France', 'Italy', 'Spain', 'Germany', 'Netherlands', 'Switzerland']
-      },
-      'africa': {
-        cuisines: ['African cuisine', 'Ethiopian restaurants', 'Moroccan restaurants', 'South African restaurants'],
-        countries: ['Morocco', 'Ethiopia', 'South Africa', 'Egypt']
-      }
-    };
+    // Expand continent to specific countries, let Qloo handle entity types
     
     const expansion = continentExpansions[location.toLowerCase()];
     if (expansion) {
       console.log('🌍 Continent detected:', location);
       console.log('🔄 Expanding to countries:', expansion.countries);
-      console.log('🍽️  Adding cuisines:', expansion.cuisines);
       
-      // Add cultural cuisines to entity names
-      extraction.entity_names = [...extraction.entity_names, ...expansion.cuisines];
       // Use array of countries instead of continent
       locationArray = expansion.countries;
       location = null; // Clear the continent location

@@ -70,8 +70,11 @@ exports.recommend = async (req, res) => {
     }
 
     // Resolve entity names to Qloo entity IDs
-    const entityIds = await resolveEntityIds(entityNames, entityType, location);
+    const entityResolution = await resolveEntityIds(entityNames, entityType, location);
+    const entityIds = entityResolution.entityIds;
+    const entityDetails = entityResolution.entityDetails;
     console.log('entityIds', entityIds);
+    console.log('entityDetails count:', entityDetails.length);
     if (!entityIds.length) {
       return res.status(400).json({ error: 'No valid Qloo entity IDs found for input.' });
     }
@@ -80,7 +83,7 @@ exports.recommend = async (req, res) => {
     const params = {
       'filter.type': `urn:entity:${entityType}`,
       'signal.interests.entities': entityIds.join(','),
-      'take': 8 // Limit results to 8 for better performance
+      'take': 10 // Increased limit to get more results
     };
     
 
@@ -100,7 +103,11 @@ exports.recommend = async (req, res) => {
       console.log('🚫 No location data available');
     }
     // Call Qloo API with error handling for location queries
-    let qlooResults;
+    let qlooResults = [];
+    let combinedResults = [];
+    let hasQlooResults = false;
+    let hasEntityDetails = false;
+    
     try {
       console.log('🚀 Making Qloo API request with params:', JSON.stringify(params, null, 2));
       
@@ -111,6 +118,7 @@ exports.recommend = async (req, res) => {
       console.log('📊 Qloo API Results Count:', qlooResults?.length || 0);
       
       if (qlooResults && qlooResults.length > 0) {
+        hasQlooResults = true;
         console.log('🏆 Top Qloo Results:');
         qlooResults.slice(0, 3).forEach((result, index) => {
           console.log(`  ${index + 1}. ${result.name || result.entity_id} (${result.subtype || 'unknown type'})`);
@@ -142,14 +150,58 @@ exports.recommend = async (req, res) => {
         console.error('Entity Names:', entityNames);
       }
       
-      throw error; // Re-throw to maintain existing error handling
+      console.log('❌ Qloo API Error, but continuing with entity details...');
+      // Don't throw error, continue with entity details
     }
+    
+    // Always add entity details to combined results
+    console.log('🔄 Adding entity details to combined results...');
+    const entityResults = entityDetails.map(detail => ({
+      entity_id: detail.entity_id,
+      name: detail.name,
+      subtype: detail.subtype,
+      location: detail.location,
+      properties: detail.properties,
+      source: 'entity_search' // Mark as from entity search
+    }));
+    
+    if (entityResults.length > 0) {
+      hasEntityDetails = true;
+      console.log('✅ Entity details added:', entityResults.length, 'entities');
+      entityResults.slice(0, 3).forEach((result, index) => {
+        console.log(`  ${index + 1}. ${result.name} (${result.subtype}) - Location: ${result.location}`);
+      });
+    }
+    
+    // Combine results, prioritizing Qloo recommendations but including all unique entities
+    console.log('🔄 Combining Qloo recommendations and entity details...');
+    
+    // Start with Qloo results
+    combinedResults = [...qlooResults];
+    
+    // Add entity details that aren't already in Qloo results
+    const qlooEntityIds = new Set(qlooResults.map(result => result.entity_id));
+    const uniqueEntityResults = entityResults.filter(entity => !qlooEntityIds.has(entity.entity_id));
+    
+    if (uniqueEntityResults.length > 0) {
+      console.log('✅ Added unique entity details:', uniqueEntityResults.length, 'entities');
+      combinedResults.push(...uniqueEntityResults);
+    }
+    
+    console.log('📊 Final combined results:', {
+      totalResults: combinedResults.length,
+      qlooResults: qlooResults.length,
+      entityDetails: entityResults.length,
+      uniqueEntityDetails: uniqueEntityResults.length,
+      hasQlooResults,
+      hasEntityDetails
+    });
 
-    // Limit results to 8 recommendations for better performance
-    const limitedResults = qlooResults.slice(0, 8)
+    // Return all results instead of limiting to 8
+    const allResults = combinedResults
 
     // Build GPT prompt
-    const prompt = buildRecommendationPrompt(userInput, similarEntries, limitedResults, entityType);
+    const prompt = buildRecommendationPrompt(userInput, similarEntries, allResults, entityType);
 
     // Call OpenAI GPT-4 for explanation/formatting
     const gptResponse = await openai.chat.completions.create({
@@ -170,8 +222,20 @@ exports.recommend = async (req, res) => {
     // console.trace(explanationArr);
     // Return both raw and formatted results
     return res.json({
-      results: limitedResults,
+      results: allResults,
       explanation: explanationArr,
+      resultStats: {
+        totalResults: combinedResults.length,
+        qlooResults: qlooResults.length,
+        entityDetails: entityDetails.length,
+        hasQlooResults,
+        hasEntityDetails
+      },
+      combinedMessage: hasQlooResults && hasEntityDetails 
+        ? 'Combined Qloo recommendations with additional search results for comprehensive coverage'
+        : hasQlooResults 
+        ? 'Using Qloo recommendations'
+        : 'Using search results as Qloo recommendations returned no results'
     });
   } catch (err) {
     console.error('Error in recommend:', err);

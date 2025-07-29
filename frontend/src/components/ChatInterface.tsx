@@ -336,7 +336,6 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
             break;
           }
           //set up recommendations  
-          aiContent = "Here are your recommendations!"
           const recommendationArr = recommendResponse.data.results?.map((m: any, i: number) => {
             return {
               title: m.name,
@@ -349,7 +348,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
           })
           console.log(recommendationArr)
           if (recommendationArr.length == 0) {
-            aiContent = "Sorry, I cant find any recommendations for you!"
+            aiContent = "I searched high and low, but I couldn't find any specific recommendations for you right now. Let me know if you'd like to try a different search or explore something else!"
           }
           setRecommendations(recommendationArr)
           console.log('Setting isRecommending to false')
@@ -358,7 +357,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
           break;
           case "analyze":
             // api/taste
-            console.trace('analyzing stuff aka putting shit into vector db')
+            console.trace('analyzing')
             console.log('Analyzing user preferences:', toAnalyze || input)
           const response1 = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/taste`,
             {input: toAnalyze || input},
