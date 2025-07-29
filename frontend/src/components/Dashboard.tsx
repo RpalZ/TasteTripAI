@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BarChart3, Clock, Star, Trash2, User, Settings, Moon, Sun } from 'lucide-react'
 import { useTheme } from './ThemeContext'
 import { useUserProfile } from '../utils/useUserProfile'
@@ -27,6 +27,50 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'tastes' | 'saved' | 'profile'>('tastes')
   const { theme, toggleTheme } = useTheme()
   const { profile, loading } = useUserProfile()
+
+  // Location state
+  const [location, setLocation] = useState<string>('Fetching location...')
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocation('Location unavailable')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords
+        try {
+          const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+          console.log('Google Maps API Key:', apiKey)
+          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+          console.log('Geocode URL:', url)
+          const response = await fetch(url)
+          const data = await response.json()
+          console.log('Geocode API response:', data)
+          if (data.status === 'OK' && data.results.length > 0) {
+            const address = data.results[0].address_components
+            const cityObj = address.find((c: any) => c.types.includes('locality')) ||
+                            address.find((c: any) => c.types.includes('administrative_area_level_1'))
+            const countryObj = address.find((c: any) => c.types.includes('country'))
+            const city = cityObj ? cityObj.long_name : ''
+            const country = countryObj ? countryObj.long_name : ''
+            if (city && country) setLocation(`${city}, ${country}`)
+            else if (country) setLocation(country)
+            else setLocation('Location unavailable')
+          } else {
+            setLocation('Location unavailable')
+          }
+        } catch (err) {
+          console.error('Geolocation error:', err)
+          setLocation('Location unavailable')
+        }
+      },
+      (err) => {
+        console.error('Geolocation permission error:', err)
+        setLocation('Location unavailable')
+      }
+    )
+  }, [])
 
   // Mock data
   const tasteSummaries: TasteSummary[] = [
@@ -122,6 +166,9 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Dashboard</h1>
           <p style={{ color: 'var(--color-text-secondary)' }}>
             Track your cultural journey and manage your preferences
+          </p>
+          <p className="mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            You're currently in {location}
           </p>
         </div>
         {/* Stats Tiles */}
