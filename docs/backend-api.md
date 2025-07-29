@@ -68,7 +68,7 @@ GOOGLE_MAPS_API_KEY=
 ---
 
 #### [NEW, July 2024] Dynamic Entity Extraction & Qloo API Conformance
-> **Enhancement:** The `/api/recommend` endpoint now uses GPT-4 to dynamically extract the most relevant Qloo entity type (e.g., Movie, Book, Artist, etc.) and canonical entity names from user input and similar tastes. These names are resolved to Qloo entity IDs using the Qloo Search API. The backend then sets `filter.type` and `signal.interests.entities` dynamically in the Qloo API call, ensuring full API conformance and supporting all Qloo entity types.
+> **Enhancement:** The `/api/recommend` endpoint now uses GPT-4 to dynamically extract the most relevant Qloo entity type (e.g., Destination, Place, Location) and canonical entity names from user input and similar tastes. These names are resolved to Qloo entity IDs using the Qloo Search API. The backend then sets `filter.type` and `signal.interests.entities` dynamically in the Qloo API call, ensuring full API conformance and supporting all Qloo entity types.
 >
 > - If no valid entity IDs are found, a 400 error is returned.
 > - This logic is implemented in `openaiService.js` and `qlooService.js`.
@@ -79,7 +79,7 @@ GOOGLE_MAPS_API_KEY=
 > 2. GPT-4 extracts:
 >    ```json
 >    {
->      "entity_type": "Movie",
+>      "entity_type": "Place",
 >      "entity_names": ["Inception", "Interstellar"]
 >    }
 >    ```
@@ -341,5 +341,5 @@ $$;
 
 #### **AI Intelligence**
 - 🧠 **Smarter entity extraction** and cleaning
-- 🎯 **Focused recommendation scope** (9 entity types)
+- 🎯 **TasteTrip AI concept** (analyze cultural tastes → recommend travel experiences)
 - 💬 **Better conversation flow** with appropriate actions

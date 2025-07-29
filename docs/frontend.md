@@ -264,17 +264,23 @@ interface Recommendation {
 
 ### **System Prompt Integration**
 
-#### **🎯 Qloo-Aligned Capabilities**
-The system prompt now focuses on 9 specific entity types:
+#### **🎯 TasteTrip AI Concept**
+The system prompt now bridges cultural tastes with travel experiences:
+
+**Taste Analysis Categories** (for understanding user preferences):
 - **Artists** (musicians, bands, singers)
 - **Books** (fiction, non-fiction, genres)
 - **Brands** (companies, products, services)
-- **Destinations** (cities, countries, travel locations)
 - **Movies** (films, cinema, genres)
-- **Places** (restaurants, venues, attractions, hotels)
-- **Podcasts** (audio content, shows, series)
 - **TV Shows** (television series, streaming content)
+- **Podcasts** (audio content, shows, series)
 - **Video Games** (gaming, interactive entertainment)
+
+**Recommendation Categories** (what can be recommended):
+- **Destinations** (cities, countries, travel locations, regions)
+- **Places** (restaurants, venues, attractions, hotels, points of interest)
+
+**Concept**: Analyze cultural tastes → Recommend relevant travel experiences
 
 #### **📝 Response Format**
 ```typescript

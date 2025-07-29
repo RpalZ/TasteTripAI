@@ -91,13 +91,11 @@ exports.recommend = async (req, res) => {
       console.log('🌍 Added location array to Qloo params (filter):', locationArray);
       console.log('📊 Location array length:', locationArray.length);
     } else if (location) {
-      if (["destination","place","location"].includes(entityType)) {
+      
         // Location-based entities: use filter.location.query for geographic filtering
         params['filter.location.query'] = location;
         console.log('📍 Added single location to Qloo params (filter):', location);
-      } else {
-        console.log('❌ No location added to Qloo params (entityType:', entityType, ', location:', location, ')');
-      }
+   
     } else {
       console.log('🚫 No location data available');
     }

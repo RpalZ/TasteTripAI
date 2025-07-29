@@ -4,6 +4,12 @@ const QLOO_API_KEY = process.env.QLOO_API_KEY;
 // const QLOO_API_KEY = "UxGf0g08SaZ-mXk4LBw_6qxVaxQGpu08jJnEPbHQAOY";
 const QLOO_API_URL = 'https://hackathon.api.qloo.com/v2/insights/';
 
+// Debug environment variable
+console.log('🔧 Environment Check:');
+console.log('  QLOO_API_KEY exists:', !!process.env.QLOO_API_KEY);
+console.log('  QLOO_API_KEY length:', process.env.QLOO_API_KEY?.length || 0);
+console.log('  QLOO_API_KEY starts with:', process.env.QLOO_API_KEY?.substring(0, 10) || 'undefined');
+
 /**
  * Fetch recommendations from Qloo API based on dynamic query params
  * @param {Object} params - Qloo API query parameters (filter.type, filter.tags, signal.location.query, etc.)
@@ -13,6 +19,8 @@ async function getQlooRecommendations(params) {
   try {
     console.log('🔗 Qloo API Request URL:', QLOO_API_URL);
     console.log('🔑 Qloo API Key (first 10 chars):', QLOO_API_KEY?.substring(0, 10) + '...');
+    console.log('🔑 Qloo API Key length:', QLOO_API_KEY?.length || 0);
+    console.log('🔑 Qloo API Key exists:', !!QLOO_API_KEY);
     
     const response = await axios.get(QLOO_API_URL, {
       params,
@@ -55,6 +63,18 @@ async function getQlooRecommendations(params) {
     console.error('  Headers:', JSON.stringify(error.config?.headers, null, 2));
     console.error('  Params:', JSON.stringify(error.config?.params, null, 2));
     console.error('  Response Data:', JSON.stringify(error.response?.data, null, 2));
+    
+    // Specific handling for 403 errors
+    if (error.response?.status === 403) {
+      console.error('🚨 403 FORBIDDEN ERROR - Possible causes:');
+      console.error('  1. Invalid or expired API key');
+      console.error('  2. API key not properly set in environment variables');
+      console.error('  3. API key doesn\'t have permission for this endpoint');
+      console.error('  4. Rate limiting or quota exceeded');
+      console.error('  5. Wrong API endpoint URL');
+      console.error('  🔍 Check your .env file for QLOO_API_KEY');
+      console.error('  🔍 Verify the API key is valid in Qloo dashboard');
+    }
     
     throw new Error(`Failed to fetch recommendations from Qloo: ${error.response?.status} - ${error.response?.data?.error || error.message}`);
   }
