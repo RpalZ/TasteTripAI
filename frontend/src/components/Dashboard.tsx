@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { BarChart3, Clock, Star, Trash2, User, Settings, Moon, Sun } from 'lucide-react'
 import { useTheme } from './ThemeContext'
 import { useUserProfile } from '../utils/useUserProfile'
+import DashboardStats from './DashboardStats'
 
 interface TasteSummary {
   id: string
@@ -123,7 +124,8 @@ export default function Dashboard() {
             Track your cultural journey and manage your preferences
           </p>
         </div>
-
+        {/* Stats Tiles */}
+        <DashboardStats />
         {/* Tab Navigation */}
         <div className="flex space-x-1 rounded-2xl p-1 mb-8 w-fit border transition-colors duration-300" style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', borderColor: 'var(--color-card-border)' }}>
           <button
