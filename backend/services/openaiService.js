@@ -78,7 +78,7 @@ async function extractEntitiesWithGPT(userInput, similarEntries = []) {
    - For music-related requests, use "Artist"
    - For entertainment content, use "Movie", "TV Show", "Podcast", or "Video Game" as appropriate
 2. A list of specific, relevant entity names that match the user's intent
-3. If the user input refers to a specific country, city, or region, extract it as a separate 'location' property
+3. If the user input refers to a specific location, extract it as a separate 'location' property. Extract countries, cities, states, neighborhoods, or continents (like "Asia", "Europe", "Africa"). For multiple locations, return an array. Be specific and actionable.
 
 Examples:
 - User input: "give me something to eat" → entity_type: "Place", entity_names: ["dining", "food"], location: null
@@ -87,6 +87,14 @@ Examples:
 - User input: "suggest a movie like Inception" → entity_type: "Movie", entity_names: ["Inception", "sci-fi films"], location: null
 - User input: "recommend things to do in Japan" → entity_type: "Destination", entity_names: ["Japan", "Japanese culture"], location: "Japan"
 - User input: "find experiences in New York City" → entity_type: "Location", entity_names: ["New York City", "NYC attractions"], location: "New York City"
+- User input: "recommend places in the United States" → entity_type: "Place", entity_names: ["American dining", "US attractions"], location: "United States"
+- User input: "restaurants in Los Angeles" → entity_type: "Place", entity_names: ["dining", "restaurants"], location: "Los Angeles"
+- User input: "Asian food" → entity_type: "Place", entity_names: ["Asian cuisine", "Asian dining"], location: "Asia"
+- User input: "Chinese restaurants in San Francisco" → entity_type: "Place", entity_names: ["Chinese cuisine", "Chinese dining"], location: "San Francisco"
+- User input: "European travel" → entity_type: "Destination", entity_names: ["European travel", "European destinations"], location: "Europe"
+- User input: "restaurants in Paris" → entity_type: "Place", entity_names: ["dining", "restaurants"], location: "Paris"
+- User input: "food in China and Japan" → entity_type: "Place", entity_names: ["Chinese cuisine", "Japanese cuisine"], location: ["China", "Japan"]
+- User input: "restaurants in New York and Los Angeles" → entity_type: "Place", entity_names: ["dining", "restaurants"], location: ["New York City", "Los Angeles"]
 
 User input: "${userInput}"
 ${similarEntries.length ? `Similar tastes: ${similarEntries.join(', ')}` : ''}
@@ -113,9 +121,96 @@ Respond in JSON:
     similarEntries
   );
   
+  // Filter out overly broad locations (continents, very broad regions)
+  const broadLocations = ['asia', 'europe', 'africa', 'north america', 'south america', 'australia', 'antarctica', 'middle east', 'central america', 'caribbean'];
+  let location = extraction.location;
+  let locationArray = null; // New array for multiple locations
+  
+  console.trace(location, "location in openaiservice");
+  console.log('📍 Raw location from GPT:', location, 'Type:', typeof location);
+  
+  // Handle case where location is returned as an array
+  if (Array.isArray(location)) {
+    console.log('🔄 Location is an array, processing multiple locations:', location);
+    
+    // Clean and validate the location array
+    locationArray = location
+      .filter(loc => loc && typeof loc === 'string' && loc.trim().length > 0)
+      .map(loc => loc.trim());
+    
+    console.log('✅ Cleaned location array:', locationArray);
+    
+    // Check if any locations in the array are continents that need expansion
+    const continentLocations = locationArray.filter(loc => 
+      broadLocations.includes(loc.toLowerCase())
+    );
+    
+    if (continentLocations.length > 0) {
+      console.log('🌍 Found continents in location array:', continentLocations);
+      // Process continent expansion for each continent in the array
+      const expandedCountries = [];
+      const expandedCuisines = [];
+      
+      continentLocations.forEach(continent => {
+        const expansion = continentExpansions[continent.toLowerCase()];
+        if (expansion) {
+          expandedCountries.push(...expansion.countries);
+          expandedCuisines.push(...expansion.cuisines);
+        }
+      });
+      
+      // Replace continents with expanded countries
+      locationArray = locationArray.filter(loc => 
+        !broadLocations.includes(loc.toLowerCase())
+      ).concat(expandedCountries);
+      
+      // Add expanded cuisines
+      extraction.entity_names = [...extraction.entity_names, ...expandedCuisines];
+      
+      console.log('🔄 Final expanded location array:', locationArray);
+    }
+    
+    location = null; // Clear single location since we have an array
+  } else if (location && broadLocations.includes(location.toLowerCase())) {
+    // Instead of filtering out, expand into cultural entities and tags
+    const continentExpansions = {
+      'asia': {
+        cuisines: ['Asian cuisine', 'Chinese restaurants', 'Japanese restaurants', 'Thai restaurants', 'Korean restaurants', 'Vietnamese restaurants', 'Indian restaurants'],
+        countries: ['China', 'Japan', 'Thailand', 'Korea', 'Vietnam', 'India']
+      },
+      'europe': {
+        cuisines: ['European cuisine', 'Italian restaurants', 'French restaurants', 'Spanish restaurants', 'German restaurants'],
+        countries: ['France', 'Italy', 'Spain', 'Germany', 'Netherlands', 'Switzerland']
+      },
+      'africa': {
+        cuisines: ['African cuisine', 'Ethiopian restaurants', 'Moroccan restaurants', 'South African restaurants'],
+        countries: ['Morocco', 'Ethiopia', 'South Africa', 'Egypt']
+      }
+    };
+    
+    const expansion = continentExpansions[location.toLowerCase()];
+    if (expansion) {
+      console.log('🌍 Continent detected:', location);
+      console.log('🔄 Expanding to countries:', expansion.countries);
+      console.log('🍽️  Adding cuisines:', expansion.cuisines);
+      
+      // Add cultural cuisines to entity names
+      extraction.entity_names = [...extraction.entity_names, ...expansion.cuisines];
+      // Use array of countries instead of continent
+      locationArray = expansion.countries;
+      location = null; // Clear the continent location
+      
+      console.log('✅ Continent expansion complete');
+    } else {
+      console.log('⚠️  Continent not found in expansion map:', location);
+    }
+  }
+  
   return {
     ...extraction,
-    entity_names: cleanedEntityNames
+    entity_names: cleanedEntityNames,
+    location: location,
+    location_array: locationArray
   };
 }
 

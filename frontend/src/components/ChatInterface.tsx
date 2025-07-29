@@ -320,7 +320,10 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
               lon: m.location?.lon
             }
           })
-
+          console.log(recommendationArr)
+          if (recommendationArr.length == 0) {
+            aiContent = "Sorry, I cant find any recommendations for you!"
+          }
           setRecommendations(recommendationArr)
           console.log('Setting isRecommending to false')
           setIsRecommending(false)
