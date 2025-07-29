@@ -99,7 +99,8 @@ interface gptResponse {
   message: string,
   action: {
     toolcall: "recommend" | "idle" | "analyze",
-    recommendQuery: string
+    recommendQuery?: string,
+    toAnalyze?: string
   }
 }
 
@@ -278,6 +279,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
       aiContent = parsedData.message
       const action = parsedData.action.toolcall
       const recommendQuery = parsedData.action.recommendQuery
+      const toAnalyze = parsedData.action.toAnalyze
 
       //getting token for requests
 
@@ -332,10 +334,12 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
           case "analyze":
             // api/taste
             console.trace('analyzing stuff aka putting shit into vector db')
+            console.log('Analyzing user preferences:', toAnalyze || input)
           const response1 = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/taste`,
-            {input},
+            {input: toAnalyze || input},
             header
           )
+          console.log('Taste analysis response:', response1.data)
           break;
         default:
           console.trace('idling')

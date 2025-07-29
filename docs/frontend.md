@@ -288,10 +288,15 @@ interface gptResponse {
   message: string,
   action: {
     toolcall: "recommend" | "idle" | "analyze",
-    recommendQuery: string
+    recommendQuery?: string,
+    toAnalyze?: string
   }
 }
 ```
+
+**Action Properties:**
+- **recommendQuery**: Concise summary of what the user wants recommended (for "recommend" action)
+- **toAnalyze**: Concise summary of user's cultural preferences to be analyzed (for "analyze" action)
 
 ### **Error Handling**
 
