@@ -68,7 +68,7 @@ GOOGLE_MAPS_API_KEY=
 ---
 
 #### [NEW, July 2024] Dynamic Entity Extraction & Qloo API Conformance
-> **Enhancement:** The `/api/recommend` endpoint now uses GPT-4 to dynamically extract the most relevant Qloo entity type (e.g., Movie, Book, Artist, etc.) and canonical entity names from user input and similar tastes. These names are resolved to Qloo entity IDs using the Qloo Search API. The backend then sets `filter.type` and `signal.interests.entities` dynamically in the Qloo API call, ensuring full API conformance and supporting all Qloo entity types.
+> **Enhancement:** The `/api/recommend` endpoint now uses GPT-4 to dynamically extract the most relevant Qloo entity type (e.g., Destination, Place, Location) and canonical entity names from user input and similar tastes. These names are resolved to Qloo entity IDs using the Qloo Search API. The backend then sets `filter.type` and `signal.interests.entities` dynamically in the Qloo API call, ensuring full API conformance and supporting all Qloo entity types.
 >
 > - If no valid entity IDs are found, a 400 error is returned.
 > - This logic is implemented in `openaiService.js` and `qlooService.js`.
@@ -79,7 +79,7 @@ GOOGLE_MAPS_API_KEY=
 > 2. GPT-4 extracts:
 >    ```json
 >    {
->      "entity_type": "Movie",
+>      "entity_type": "Place",
 >      "entity_names": ["Inception", "Interstellar"]
 >    }
 >    ```
@@ -173,7 +173,7 @@ create policy "Users can update their own profile" on user_profile
 The recommendation system has been optimized for faster response times:
 
 ### Response Limits
-- **Qloo API Results**: Limited to 8 recommendations per request
+- **Qloo API Results**: Limited to 8 recommendations per request using the `take` parameter
 - **Entity Resolution**: Reduced to 3 entities per search term
 - **Similar Tastes**: Limited to 6 similar entries for context
 
@@ -197,11 +197,27 @@ The system now includes intelligent entity name cleaning and contextualization:
   - Makes names more searchable and specific
   - Ensures names are concise but descriptive
 
-### Examples of Entity Name Cleaning:
-- `["Italian restaurant"]` → `["Italian cuisine", "Italian dining"]`
-- `["jazz music"]` → `["jazz", "jazz artists"]`
-- `["New York"]` → `["New York City", "NYC"]`
-- `["action movie"]` → `["action films", "action cinema"]`
+### Location Extraction Rules
+- **Location Support**: Location extraction supports specific countries, cities, states, neighborhoods, and continents
+- **Multiple Locations**: Qloo API supports arrays of locations in a single request using `filter.location.query`
+- **Flexible Input**: GPT can return locations as single strings or arrays of multiple locations
+- **Geographic Filtering**: Uses `filter.location.query` to filter results to specific geographic locations
+- **Qloo API Compatibility**: The Qloo search API supports fuzzy-matched location queries
+- **Smart Continent Handling**: Automatically expands continents into multiple specific countries and cultural cuisines
+- **Examples**:
+  - ✅ "Japan" → location: "Japan" (country)
+  - ✅ "United States" → location: "United States" (country)
+  - ✅ "New York City" → location: "New York City" (city)
+  - ✅ "Los Angeles" → location: "Los Angeles" (city)
+  - ✅ "Lower East Side" → location: "Lower East Side" (neighborhood)
+  - ✅ "California" → location: "California" (state)
+  - 🌍 "Asia" → location: null, location_array: ["China", "Japan", "Thailand", "Korea", "Vietnam", "India"], entity_names: ["Asian cuisine", "Chinese restaurants", "Japanese restaurants", ...]
+  - 🌍 "Europe" → location: null, location_array: ["France", "Italy", "Spain", "Germany", "Netherlands", "Switzerland"], entity_names: ["European cuisine", "Italian restaurants", "French restaurants", ...]
+  - 📍 "China and Japan" → location: null, location_array: ["China", "Japan"], entity_names: ["Chinese cuisine", "Japanese cuisine", ...]
+  - 📍 "New York and Los Angeles" → location: null, location_array: ["New York City", "Los Angeles"], entity_names: ["dining", "restaurants", ...]
+  - ❌ "Middle East" → location: null (region too broad)
+
+
 
 ## Next Steps
 - Implement `/api/recommend` and `/api/booking` endpoints
@@ -276,9 +292,9 @@ $$;
 - **Added user isolation** - users can only see their own taste data
 
 #### **🚀 Performance Optimizations**
-- **Limited Qloo results** to 8 recommendations per request
+- **Limited Qloo results** to 8 recommendations per request using the `take` parameter
 - **Reduced entity resolution** from 4 to 3 entities per search term
-- **Added API limit parameter** (`limit: 8`) to Qloo calls
+- **Added API limit parameter** (`take: 8`) to Qloo calls
 - **Faster response times** and reduced costs
 
 #### **🧠 AI Entity Processing**
@@ -286,10 +302,22 @@ $$;
 - **Added `cleanEntityNames`** function for contextual entity cleaning
 - **Improved entity name relevance** based on user query and taste history
 - **Better entity type classification** for Qloo API compatibility
+- **Smart location extraction** supporting specific countries, cities, localities, and continents
+- **Flexible location handling** supporting both single locations and arrays of multiple locations
+- **Intelligent continent handling** with automatic expansion into multiple specific countries and cultural cuisines
+- **Multiple location support** using JavaScript arrays for cleaner continent-to-countries expansion
+- **Geographic filtering** using `filter.location.query` for precise location-based results
 
-#### **📊 Enhanced Logging**
+#### **📊 Enhanced Logging & Debugging**
 - **Added location logging** in recommendation controller
 - **Debug console logs** for entity extraction and processing
+- **400 Error Detection** for location not found errors with detailed debugging info
+- **Location validation** with individual country name validation and length checks
+- **Continent expansion logging** to track country array generation
+- **API parameter validation** with detailed request logging
+- **Qloo API Response Logging** with status codes, result counts, and sample results
+- **Entity Resolution Logging** with detailed search results and entity ID mapping
+- **Comprehensive Error Logging** with full request/response context for debugging
 - **Better error tracking** and debugging capabilities
 
 ### **Database Schema Changes**
@@ -313,5 +341,5 @@ $$;
 
 #### **AI Intelligence**
 - 🧠 **Smarter entity extraction** and cleaning
-- 🎯 **Focused recommendation scope** (9 entity types)
+- 🎯 **TasteTrip AI concept** (analyze cultural tastes → recommend travel experiences)
 - 💬 **Better conversation flow** with appropriate actions

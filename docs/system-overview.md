@@ -2,7 +2,7 @@
 
 ## 🎯 **Project Summary**
 
-TasteTrip AI is a sophisticated cultural discovery assistant that helps users explore and discover amazing cultural experiences based on their tastes and preferences. The system uses AI-powered taste analysis, vector similarity search, and the Qloo API to provide personalized recommendations across 9 different entity types.
+TasteTrip AI is a sophisticated cultural discovery assistant that bridges users' cultural tastes with travel experiences. It analyzes cultural preferences (books, movies, music, etc.) and recommends relevant destinations and places. The system uses AI-powered taste analysis, vector similarity search, and the Qloo API to provide personalized travel recommendations based on cultural preferences.
 
 ---
 
@@ -139,18 +139,23 @@ switch (action) {
 
 ## 🎯 **Qloo Integration**
 
-### **Supported Entity Types**
-The system now focuses on 9 specific Qloo-supported entity types:
+### **TasteTrip AI Concept**
+The system bridges cultural tastes with travel experiences:
 
-1. **Artists** (musicians, bands, singers)
-2. **Books** (fiction, non-fiction, genres)
-3. **Brands** (companies, products, services)
-4. **Destinations** (cities, countries, travel locations)
-5. **Movies** (films, cinema, genres)
-6. **Places** (restaurants, venues, attractions, hotels)
-7. **Podcasts** (audio content, shows, series)
-8. **TV Shows** (television series, streaming content)
-9. **Video Games** (gaming, interactive entertainment)
+**Taste Analysis Categories** (for understanding user preferences):
+- **Artists** (musicians, bands, singers)
+- **Books** (fiction, non-fiction, genres)
+- **Brands** (companies, products, services)
+- **Movies** (films, cinema, genres)
+- **TV Shows** (television series, streaming content)
+- **Podcasts** (audio content, shows, series)
+- **Video Games** (gaming, interactive entertainment)
+
+**Recommendation Categories** (what can be recommended):
+1. **Destinations** (cities, countries, travel locations, regions)
+2. **Places** (restaurants, venues, attractions, hotels, points of interest)
+
+**Concept**: Analyze cultural tastes → Recommend relevant travel experiences
 
 ### **API Integration Flow**
 ```
