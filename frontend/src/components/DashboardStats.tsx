@@ -11,10 +11,34 @@ interface StatTileProps {
 
 function StatTile({ icon, label, value, loading }: StatTileProps) {
   return (
-    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-900 rounded-2xl shadow p-6 min-h-[120px] border border-gray-200 dark:border-gray-800">
-      <div className="mb-2 text-3xl">{icon}</div>
-      <div className="text-lg font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>{loading ? 'Loading...' : value}</div>
-      <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+    <div
+      style={{
+        background: 'var(--card-bg-color)',
+        color: 'var(--text-color)',
+        border: '1px solid var(--card-border-color)',
+        boxShadow: 'var(--card-shadow, 0 1px 4px 0 rgba(0,0,0,0.04))',
+        transition: 'background 0.3s, color 0.3s, border 0.3s',
+      }}
+      className="flex flex-col items-center justify-center rounded-2xl p-6 min-h-[120px]"
+    >
+      <div
+        className="mb-2 text-3xl"
+        style={{ color: 'var(--icon-color, var(--text-color))' }}
+      >
+        {icon}
+      </div>
+      <div
+        className="text-lg font-semibold mb-1"
+        style={{ color: 'var(--text-color)' }}
+      >
+        {loading ? 'Loading...' : value}
+      </div>
+      <div
+        className="text-xs"
+        style={{ color: 'var(--text-secondary-color)' }}
+      >
+        {label}
+      </div>
     </div>
   );
 }
@@ -96,4 +120,4 @@ export default function DashboardStats() {
       <StatTile icon={<Heart />} label="Saved Locations" value={savedPlaces ?? '...'} loading={loading} />
     </div>
   );
-} 
+}
