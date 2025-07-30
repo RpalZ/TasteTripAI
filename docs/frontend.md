@@ -92,7 +92,7 @@ frontend/
 - See `docs/backend-api.md` for backend API details
 - See `README.md` in the frontend folder for more details
 
----
+--- 
 
 ## 🎨 **Frontend Enhancements Summary**
 
