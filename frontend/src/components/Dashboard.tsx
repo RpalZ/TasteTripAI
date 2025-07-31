@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { BarChart3, Clock, Star, Trash2, User, Settings, Moon, Sun } from 'lucide-react'
 import { useTheme } from './ThemeContext'
 import { useUserProfile } from '../utils/useUserProfile'
@@ -26,6 +26,24 @@ interface SavedRecommendation {
   rating?: number
 }
 
+// Add these interfaces at the top of Dashboard.tsx
+interface UserBookmark {
+  id: string
+  user_id: string
+  qloo_id: string
+  name: string
+  type?: string
+  location?: string
+  address?: string
+  created_at: string
+  rating?: number
+  lat?: number
+  lon?: number
+  description?: string
+  website?: string
+  image_url?: string
+}
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'tastes' | 'saved' | 'profile'>('tastes')
   const { theme, toggleTheme } = useTheme()
@@ -39,6 +57,98 @@ export default function Dashboard() {
   const [bookmarksLoading, setBookmarksLoading] = useState(true)
   const [tasteSummaries, setTasteSummaries] = useState<TasteSummary[]>([])
   const [queriesLoading, setQueriesLoading] = useState(true)
+
+  // 1. Add a ref to track mounted state
+  const isMounted = useRef(false)
+
+  // 2. Modify the fetchBookmarks function to add debouncing and better state management
+  const fetchBookmarks = useCallback(async () => {
+    if (!isMounted.current) return
+
+    try {
+      // Only show loading on initial fetch
+      if (!savedRecommendations.length) {
+        setBookmarksLoading(true)
+      }
+
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.user) {
+        setSavedRecommendations([])
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('user_bookmarks')
+        .select('*')
+        .eq('user_id', session.session.user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      if (isMounted.current) {
+        setSavedRecommendations(data?.map(bookmark => ({
+          id: bookmark.id,
+          qloo_id: bookmark.qloo_id,
+          title: bookmark.name || 'Unnamed Location',
+          type: bookmark.type || 'place',
+          location: bookmark.location || bookmark.address || 'No location provided',
+          savedAt: new Date(bookmark.created_at),
+          rating: bookmark.rating || 0
+        })) || [])
+      }
+    } catch (error) {
+      console.error('Error fetching bookmarks:', error)
+    } finally {
+      if (isMounted.current) {
+        setBookmarksLoading(false)
+      }
+    }
+  }, []) // Empty dependency array since we don't need any dependencies
+
+  // 3. Setup proper effect hooks
+  useEffect(() => {
+    isMounted.current = true
+    
+    // Initial fetch
+    fetchBookmarks()
+
+    // Setup real-time subscription
+    const subscription = supabase
+      .channel('bookmarks_db_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'user_bookmarks' 
+        },
+        (payload) => {
+          // Instead of refetching, update the state directly
+          if (isMounted.current) {
+            if (payload.eventType === 'DELETE') {
+              setSavedRecommendations(prev => 
+                prev.filter(rec => rec.qloo_id !== payload.old.qloo_id)
+              )
+            } else if (payload.eventType === 'INSERT') {
+              setSavedRecommendations(prev => [{
+                id: payload.new.id,
+                qloo_id: payload.new.qloo_id,
+                title: payload.new.name || 'Unnamed Location',
+                type: payload.new.type || 'place',
+                location: payload.new.location || payload.new.address || 'No location provided',
+                savedAt: new Date(payload.new.created_at),
+                rating: payload.new.rating || 0
+              }, ...prev])
+            }
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      isMounted.current = false
+      subscription.unsubscribe()
+    }
+  }, [fetchBookmarks]) // Only depend on fetchBookmarks
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -72,39 +182,6 @@ export default function Dashboard() {
       },
       () => setLocation('Location unavailable')
     )
-  }, [])
-
-  // Move fetchBookmarks out so it can be called after removal/bookmark change
-  const fetchBookmarks = async () => {
-    setBookmarksLoading(true)
-    const { data: session } = await supabase.auth.getSession()
-    if (!session?.session) {
-      setSavedRecommendations([])
-      setBookmarksLoading(false)
-      return
-    }
-    const { data, error } = await supabase
-      .from('user_bookmarks')
-      .select('id, qloo_id, name, type, location, created_at, rating')
-      .eq('user_id', session.session.user.id)
-      .order('created_at', { ascending: false })
-    if (data) {
-      setSavedRecommendations(
-        data.map((b: any) => ({
-          ...b,
-          title: b.name, // Map 'name' from DB to 'title' for UI
-          savedAt: b.created_at ? new Date(b.created_at) : new Date(),
-          qloo_id: b.qloo_id, // Ensure qloo_id is present for SaveBookmarkButton
-        }))
-      )
-    } else {
-      setSavedRecommendations([])
-    }
-    setBookmarksLoading(false)
-  }
-
-  useEffect(() => {
-    fetchBookmarks()
   }, [])
 
   // Fetch recent queries from Supabase
@@ -168,18 +245,40 @@ export default function Dashboard() {
     return 'User';
   };
 
-  // Handler to remove a bookmark and refresh list (now uses qloo_id)
+  // 4. Modify the handleRemoveBookmark to be more optimistic
   const handleRemoveBookmark = async (qlooId: string) => {
-    setBookmarksLoading(true)
     const { data: session } = await supabase.auth.getSession()
     if (!session?.session) return
-    await supabase
-      .from('user_bookmarks')
-      .delete()
-      .eq('user_id', session.session.user.id)
-      .eq('qloo_id', qlooId)
-    await fetchBookmarks()
+    
+    // Optimistically update UI
+    setSavedRecommendations(prev => 
+      prev.filter(rec => rec.qloo_id !== qlooId)
+    )
+
+    try {
+      await supabase
+        .from('user_bookmarks')
+        .delete()
+        .eq('user_id', session.session.user.id)
+        .eq('qloo_id', qlooId)
+    } catch (error) {
+      // On error, revert the optimistic update
+      fetchBookmarks()
+    }
   }
+
+  // Add this right after the component declaration
+  useEffect(() => {
+    // Verify Supabase client initialization
+    if (!supabase) {
+      console.error('Supabase client not initialized')
+      return
+    }
+    
+    // Log environment variables (without exposing sensitive data)
+    console.log('Supabase URL configured:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('Supabase key configured:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  }, [])
 
   return (
     <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="min-h-screen pt-16 p-6 transition-colors duration-300">
@@ -266,13 +365,19 @@ export default function Dashboard() {
 
         {activeTab === 'saved' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Saved Recommendations</h2>
-            {bookmarksLoading ? (
-              <p>Loading...</p>
+            <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              Saved Recommendations
+            </h2>
+            {bookmarksLoading && !savedRecommendations.length ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-sky-500 border-t-transparent" />
+              </div>
             ) : savedRecommendations.length === 0 ? (
-              <p>You have no saved locations yet.</p>
+              <p className="text-center py-8" style={{ color: 'var(--color-text-secondary)' }}>
+                You have no saved locations yet.
+              </p>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-4 animate-fade-in">
                 {savedRecommendations.map((rec) => (
                   <div
                     key={rec.id}
