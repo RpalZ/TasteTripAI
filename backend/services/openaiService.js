@@ -1,4 +1,5 @@
 const OpenAI = require('openai');
+const cacheService = require('./cacheService');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,11 +11,24 @@ const openai = new OpenAI({
  * @returns {Promise<number[]>} Embedding vector
  */
 async function generateEmbedding(text) {
+  // Check cache first
+  const cachedEmbedding = cacheService.getEmbedding(text);
+  if (cachedEmbedding) {
+    console.log('🗄️ Using cached embedding for:', text.substring(0, 50) + '...');
+    return cachedEmbedding;
+  }
+
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
-  return response.data[0].embedding;
+  
+  const embedding = response.data[0].embedding;
+  
+  // Cache the embedding
+  cacheService.cacheEmbedding(text, embedding);
+  
+  return embedding;
 }
 
 /**
@@ -81,19 +95,23 @@ async function extractEntitiesWithGPT(userInput, similarEntries = []) {
 
 Examples:
 - User input: "give me something to eat" → entity_type: "Place", entity_names: ["dining", "food"], location: null
-- User input: "recommend a good Italian restaurant" → entity_type: "Place", entity_names: ["Italian cuisine", "Italian dining"], location: null
+- User input: "recommend a good Italian restaurant" → entity_type: "Place", entity_names: ["Italian cuisine", "Italian restaurants"], location: null
+- User input: "sushi places" → entity_type: "Place", entity_names: ["sushi", "Japanese cuisine", "sushi restaurants"], location: null
+- User input: "best pizza spots" → entity_type: "Place", entity_names: ["pizza", "Italian cuisine", "pizza restaurants"], location: null
+- User input: "Mexican food" → entity_type: "Place", entity_names: ["Mexican cuisine", "Mexican restaurants"], location: null
+- User input: "Thai restaurants" → entity_type: "Place", entity_names: ["Thai cuisine", "Thai restaurants"], location: null
 - User input: "I love jazz music and want to travel" → entity_type: "Place", entity_names: ["jazz clubs", "music venues", "jazz culture"], location: null
 - User input: "I love sci-fi movies and want to visit tech cities" → entity_type: "Destination", entity_names: ["tech cities", "futuristic attractions", "innovation hubs"], location: null
 - User input: "recommend things to do in Japan" → entity_type: "Destination", entity_names: ["Japan", "Japanese culture"], location: "Japan"
 - User input: "find experiences in New York City" → entity_type: "Location", entity_names: ["New York City", "NYC attractions"], location: "New York City"
 - User input: "recommend places in the United States" → entity_type: "Place", entity_names: ["American dining", "US attractions"], location: "United States"
-- User input: "restaurants in Los Angeles" → entity_type: "Place", entity_names: ["dining", "restaurants"], location: "Los Angeles"
-- User input: "Asian food" → entity_type: "Place", entity_names: ["Asian cuisine", "Asian dining"], location: "Asia"
-- User input: "Chinese restaurants in San Francisco" → entity_type: "Place", entity_names: ["Chinese cuisine", "Chinese dining"], location: "San Francisco"
+- User input: "restaurants in Los Angeles" → entity_type: "Place", entity_names: ["restaurants", "dining"], location: "Los Angeles"
+- User input: "Asian food" → entity_type: "Place", entity_names: ["Asian cuisine", "Asian restaurants"], location: null
+- User input: "Chinese restaurants in San Francisco" → entity_type: "Place", entity_names: ["Chinese cuisine", "Chinese restaurants"], location: "San Francisco"
 - User input: "European travel" → entity_type: "Destination", entity_names: ["European travel", "European destinations"], location: "Europe"
-- User input: "restaurants in Paris" → entity_type: "Place", entity_names: ["dining", "restaurants"], location: "Paris"
+- User input: "restaurants in Paris" → entity_type: "Place", entity_names: ["restaurants", "dining"], location: "Paris"
 - User input: "food in China and Japan" → entity_type: "Place", entity_names: ["Chinese cuisine", "Japanese cuisine"], location: ["China", "Japan"]
-- User input: "restaurants in New York and Los Angeles" → entity_type: "Place", entity_names: ["dining", "restaurants"], location: ["New York City", "Los Angeles"]
+- User input: "restaurants in New York and Los Angeles" → entity_type: "Place", entity_names: ["restaurants", "dining"], location: ["New York City", "Los Angeles"]
 
 User input: "${userInput}"
 ${similarEntries.length ? `Similar tastes: ${similarEntries.join(', ')}` : ''}

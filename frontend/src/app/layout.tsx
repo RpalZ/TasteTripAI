@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeContext'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import { ChatProvider } from '@/context/ChatContext'
+import PageTransition from '@/components/PageTransition'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -21,9 +24,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="">
       <body className={`${inter.className} m-0 p-0 overflow-x-hidden`}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <ChatProvider>
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </ChatProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

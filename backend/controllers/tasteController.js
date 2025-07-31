@@ -7,7 +7,7 @@ const { generateEmbedding } = require('../services/openaiService');
  */
 exports.createTaste = async (req, res) => {
   try {
-    const { input } = req.body;
+    const { input, weight } = req.body;
     if (!input) return res.status(400).json({ error: 'Input is required' });
 
     // Generate embedding
@@ -27,7 +27,7 @@ exports.createTaste = async (req, res) => {
 
     if (error) throw error;
     const embedding_id = data[0].id;
-    return res.json({ embedding_id });
+    return res.json({ embedding_id, weight: weight || 10 });
   } catch (err) {
     console.error('Error in createTaste:', err);
     return res.status(500).json({ error: 'Failed to store taste input' });

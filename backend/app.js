@@ -7,6 +7,7 @@ const { verifySupabaseJWT } = require('./utils/jwtVerify');
 const tasteRoutes = require('./routes/tasteRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const cacheRoutes = require('./routes/cacheRoutes');
 
 const app = express();
 
@@ -32,5 +33,6 @@ app.use('/api', requireAuth);
 app.use('/api/taste', tasteRoutes);
 app.use('/api/recommend', recommendationRoutes);
 app.use('/api/booking', bookingRoutes);
+app.use('/api/cache', cacheRoutes);
 
 module.exports = app;

@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cacheService = require('./cacheService');
 
 const QLOO_API_KEY = process.env.QLOO_API_KEY;
 // const QLOO_API_KEY = "UxGf0g08SaZ-mXk4LBw_6qxVaxQGpu08jJnEPbHQAOY";
@@ -16,6 +17,13 @@ console.log('  QLOO_API_KEY starts with:', process.env.QLOO_API_KEY?.substring(0
  * @returns {Promise<Object[]>}
  */
 async function getQlooRecommendations(params) {
+  // Check cache first
+  const cachedResult = cacheService.getQlooRecommendations(params, {});
+  if (cachedResult) {
+    console.log('🗄️ Using cached Qloo recommendations');
+    return cachedResult;
+  }
+
   try {
     console.log('🔗 Qloo API Request URL:', QLOO_API_URL);
     console.log('🔑 Qloo API Key (first 10 chars):', QLOO_API_KEY?.substring(0, 10) + '...');
@@ -59,7 +67,12 @@ async function getQlooRecommendations(params) {
     }
     
     // Qloo returns results.entities array
-    return response.data.results?.entities || [];
+    const result = response.data.results?.entities || [];
+    
+    // Cache the result
+    cacheService.cacheQlooRecommendations(params, {}, result);
+    
+    return result;
   } catch (error) {
     console.error('❌ Qloo API Error Details:');
     console.error('  Message:', error.message);
@@ -89,13 +102,22 @@ async function getQlooRecommendations(params) {
 
 /**
  * Resolve an array of entity names to Qloo entity IDs using the Qloo search API.
- * @param {string[]} names - Array of entity names (e.g., movie titles)
- * @param {string} type - Entity type (e.g., 'movie')
+ * @param {string[]} names - Array of entity names (e.g., restaurant names, cuisine types)
+ * @param {string} type - Entity type (e.g., 'place', 'movie', 'destination')
  * @param {string} location - Location name (e.g., 'United States', 'New York City', 'Los Angeles')
  * @returns {Promise<{entityIds: string[], entityDetails: Array}>} Array of Qloo entity IDs and details
  */
-async function resolveEntityIds(names, type = 'movie', location) {
+async function resolveEntityIds(names, type = 'place', location) {
   console.log('🔍 Resolving entity IDs for:', { names, type, location });
+  
+  // Check cache first
+  const cacheKey = { names, type, location };
+  const cachedResult = cacheService.getQlooEntities(cacheKey);
+  if (cachedResult) {
+    console.log('🗄️ Using cached entity resolution');
+    return cachedResult;
+  }
+  
   const results = [];
   const entityDetails = [];
   
@@ -105,6 +127,8 @@ async function resolveEntityIds(names, type = 'movie', location) {
         query: name,
         type: `urn:entity:${type}`
       };
+      
+      console.log(`🔍 Searching Qloo for entity: "${name}" with type: urn:entity:${type}`);
       // Add location param if provided (Qloo search API supports countries, cities, and localities)
       if (location) {
         params.location = location; // Supports countries, cities, neighborhoods (e.g., 'United States', 'New York City', 'Lower East Side')
@@ -124,7 +148,7 @@ async function resolveEntityIds(names, type = 'movie', location) {
       
       // Collect up to 3 entity_ids from the results array (reduced for better performance)
       const entities = response.data.results || [];
-      console.log(`    📊 Found ${entities.length} entities for "${name}"`);
+              console.log(`    📊 Found ${entities.length} entities for "${name}" (type: urn:entity:${type})`);
       
       for (let i = 0; i < Math.min(3, entities.length); i++) {
         const entity = entities[i]?.entity_id;
@@ -159,10 +183,15 @@ async function resolveEntityIds(names, type = 'movie', location) {
     uniqueResults.indexOf(detail.entity_id) === index
   );
   
-  return {
+  const result = {
     entityIds: uniqueResults,
     entityDetails: uniqueEntityDetails
   };
+  
+  // Cache the result
+  cacheService.cacheQlooEntities(cacheKey, result);
+  
+  return result;
 }
 
 module.exports = { getQlooRecommendations, resolveEntityIds };

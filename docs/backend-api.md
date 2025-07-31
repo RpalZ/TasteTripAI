@@ -1,345 +1,271 @@
-# TasteTrip AI Backend API Documentation
+# Backend API Documentation
 
-## Environment Variables
-Add these to your `.env` file:
-```
-OPENAI_API_KEY=
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-QLOO_API_KEY=
-GOOGLE_MAPS_API_KEY=
-```
+## Overview
+The backend provides RESTful API endpoints for the TasteTrip AI application, handling user authentication, taste analysis, and recommendation generation.
 
-## Supabase Setup
-- Table: `user_tastes`
-  - `id` (UUID, PK)
-  - `input` (TEXT)
-  - `embedding` (VECTOR[1536])
-  - `timestamp` (TIMESTAMP)
-- Enable `pgvector` extension.
-- Create the `match_user_tastes` function (see below).
+## Authentication
+All endpoints require a valid Supabase JWT token in the Authorization header:
+```
+Authorization: Bearer <jwt_token>
+```
 
 ## Endpoints
 
-### 1. POST `/api/taste`
-**Purpose:** Store a user’s taste input as vector + raw data
-- **Input:** `{ input: "I like jazz and pizza" }`
-- **Logic:**
-  - Generates embedding via OpenAI
-  - Stores `{ input, embedding, timestamp }` in Supabase
-- **Returns:** `{ embedding_id: "abc123" }`
+### POST /api/taste
+Analyzes user input and stores taste preferences in the database.
 
-### 2. GET `/api/taste/similar?id=abc123`
-**Purpose:** Find similar past taste entries via vector similarity
-- **Logic:**
-  - Gets target embedding by ID
-  - Uses pgvector similarity query to return top N matches
-- **Returns:** `Array` of similar taste entries
-
-### 3. POST `/api/recommend`
-**Purpose:** Get cultural recommendations and explanations
-- **Input:** `{ embedding_id: "abc123" }`
-- **Logic:**
-  - Fetches original taste input and top 3 similar entries
-  - Passes to Qloo API for raw recommendations
-  - Formats and explains using OpenAI GPT prompt
-- **Returns:**
+**Request Body:**
+```json
+{
+  "input": "I love sushi and Japanese culture",
+  "weight": 25
+}
 ```
+
+**Response:**
+```json
+{
+  "message": "Taste preferences stored successfully",
+  "embedding_id": "uuid",
+  "weight": 25
+}
+```
+
+**Weight Parameter:**
+- **Range**: 1-50
+- **Purpose**: Controls recommendation specificity via Qloo API `signal.interests.entities.weight`
+- **Values**:
+  - **1-10**: General/broad recommendations (e.g., "restaurants")
+  - **11-30**: Moderately specific (e.g., "Italian restaurants") 
+  - **31-50**: Very specific (e.g., "authentic Italian restaurants in downtown")
+
+### POST /api/recommend
+Generates personalized recommendations based on user tastes and input.
+
+**Request Body:**
+```json
+{
+  "embedding_id": "uuid",
+  "weight": 25
+}
+```
+
+**Response:**
+```json
 {
   "results": [
     {
-      "title": "Napoli Ristorante",
-      "type": "Food",
-      "description": "A classic Neapolitan pizza spot that aligns with your jazz & Italian fusion taste.",
-      "location": "Doha, Qatar",
-      "lat": 25.276987,
-      "lng": 51.520008
+      "entity_id": "qloo_entity_id",
+      "name": "Restaurant Name",
+      "subtype": "urn:entity:place",
+      "properties": {
+        "address": "123 Main St",
+        "phone": "+1234567890",
+        "business_rating": 4.5,
+        "keywords": ["sushi", "japanese"],
+        "images": [{"url": "image_url", "type": "photo"}],
+        "price_level": 2
+      },
+      "popularity": 85,
+      "location": {
+        "lat": 35.6762,
+        "lon": 139.6503,
+        "geohash": "xn774c"
+      }
     }
   ],
-  "explanation": "GPT-4 formatted explanation of the recommendations."
+  "explanation": {
+    "recommendations": [
+      "This sushi restaurant is perfect for your taste preferences..."
+    ]
+  },
+  "resultStats": {
+    "totalResults": 10,
+    "qlooResults": 8,
+    "entityDetails": 2,
+    "hasQlooResults": true,
+    "hasEntityDetails": true
+  }
 }
 ```
 
-#### Qloo + GPT Workflow
-- Calls Qloo API with user and similar tastes for recommendations
-- Builds a system prompt for GPT-4 to explain and format results
-- Returns both raw and formatted recommendations
+### POST /api/booking
+Handles booking-related operations (placeholder for future implementation).
 
----
+## Database Schema
 
-#### [NEW, July 2024] Dynamic Entity Extraction & Qloo API Conformance
-> **Enhancement:** The `/api/recommend` endpoint now uses GPT-4 to dynamically extract the most relevant Qloo entity type (e.g., Destination, Place, Location) and canonical entity names from user input and similar tastes. These names are resolved to Qloo entity IDs using the Qloo Search API. The backend then sets `filter.type` and `signal.interests.entities` dynamically in the Qloo API call, ensuring full API conformance and supporting all Qloo entity types.
->
-> - If no valid entity IDs are found, a 400 error is returned.
-> - This logic is implemented in `openaiService.js` and `qlooService.js`.
-> - This enhancement is backward compatible: if the input is already a canonical entity name, it will be used as-is.
->
-> **Example:**
-> 1. User input: "I love time travel movies like Inception and Interstellar."
-> 2. GPT-4 extracts:
->    ```json
->    {
->      "entity_type": "Place",
->      "entity_names": ["Inception", "Interstellar"]
->    }
->    ```
-> 3. The backend resolves these names to Qloo entity IDs (e.g., `urn:entity:movie:inception`, ...).
-> 4. The Qloo API is called with:
->    - `filter.type = urn:entity:movie`
->    - `signal.interests.entities = <comma-separated entity IDs>`
-> 5. Recommendations and a GPT-4 explanation are returned.
->
-> **Error Handling:**
-> - If no valid Qloo entity IDs are found, returns:
->   ```
->   {
->     "error": "No valid Qloo entity IDs found for input."
->   }
->   ```
-
----
-
-### 4. POST `/api/booking` **(DEPRECATED)**
-**Purpose:** (Deprecated) Previously generated a Google Maps link for a given location for booking/map display.
-
-> **DEPRECATED:** Booking should now be handled directly on the frontend using Supabase. This endpoint is no longer required unless backend logic (e.g., third-party API integration, privileged actions) is needed in the future.
-
-- **Input:**
-  - `{ lat: number, lon: number, name?: string, address?: string, description?: string }`
-  - (Optionally, accepts an array: `{ locations: [{ lat, lon, name?, address?, description? }, ...] }` for batch support)
-- **Logic:**
-  - Validates that `lat` and `lon` are present and within valid ranges.
-  - Returns a Google Maps link for the provided coordinates.
-  - Echoes back any provided metadata (name, address, description) for frontend display.
-  - (If batch: returns an array of results.)
-- **Returns:**
-```
-{
-  name: "Al Wakrah Old Souq",
-  address: "Al Wakra Rd Al Wakrah Qatar",
-  description: "Set on a public beach, this longtime market has a variety of local vendors & cafes with global fare.",
-  lat: 25.169367,
-  lon: 51.61019,
-  google_maps_link: "https://www.google.com/maps/search/?api=1&query=25.169367,51.61019"
-}
-```
-- **Note:**
-  - The backend does not call Google Maps or Qloo APIs for this endpoint.
-  - The frontend is responsible for embedding the map and handling interactivity using the provided link and coordinates.
-
-#### Booking Workflow (Deprecated)
-- The frontend sends the selected place's coordinates (and optional metadata) to the backend.
-- The backend validates and returns a Google Maps link for display or booking purposes.
-- **Now recommended:** The frontend should handle booking logic and data storage directly with Supabase.
-
-## User Onboarding & Profile
-- After sign up, users complete onboarding:
-  - Choose a unique username (stored in `user_profile` table).
-  - Select interests (sent to `/api/taste` and stored as a vector).
-  - Onboarding status is tracked in `user_profile.has_onboarded`.
-
-### Table: user_profile
-```sql
-create table if not exists user_profile (
-  id uuid primary key references auth.users(id),
-  username text unique,
-  has_onboarded boolean default false,
-  created_at timestamptz default now()
-);
-```
-- `id`: User UUID (from Supabase Auth)
-- `username`: Unique username
-- `has_onboarded`: Boolean flag for onboarding completion
+### user_tastes Table
+- `id`: UUID (Primary Key)
+- `user_id`: UUID (Foreign Key to auth.users)
+- `embedding`: Vector (pgvector)
+- `content`: Text
 - `created_at`: Timestamp
 
-**RLS Policies:**
+### conversations Table
+- `id`: UUID (Primary Key)
+- `user_id`: UUID (Foreign Key to auth.users)
+- `title`: Text
+- `created_at`: Timestamp
+
+### chats Table
+- `id`: UUID (Primary Key)
+- `conversation_id`: UUID (Foreign Key to conversations)
+- `user_id`: UUID (Foreign Key to auth.users)
+- `message`: Text
+- `sender_type`: Text ('user' | 'ai')
+- `created_at`: Timestamp
+
+### user_bookmarks Table
+- `id`: UUID (Primary Key)
+- `user_id`: UUID (Foreign Key to auth.users)
+- `qloo_id`: Text
+- `created_at`: Timestamp
+
+## Row Level Security (RLS) Policies
+
+### user_tastes
 ```sql
-alter table user_profile enable row level security;
-create policy "Users can view their own profile" on user_profile
-  for select using (auth.uid() = id);
-create policy "Users can create their own profile" on user_profile
-  for insert with check (auth.uid() = id);
-create policy "Users can update their own profile" on user_profile
-  for update using (auth.uid() = id);
+CREATE POLICY "Users can only access their own tastes" ON user_tastes
+FOR ALL USING (auth.uid() = user_id);
 ```
 
-## Authentication
-- All endpoints require a valid Supabase JWT in the `Authorization` header.
-- Auth state is managed client-side and checked on every request.
-- Onboarding status is checked via the `user_profile` table.
+### conversations
+```sql
+CREATE POLICY "Users can only access their own conversations" ON conversations
+FOR ALL USING (auth.uid() = user_id);
+```
+
+### chats
+```sql
+CREATE POLICY "Users can only access chats from their conversations" ON chats
+FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM conversations 
+    WHERE conversations.id = chats.conversation_id 
+    AND conversations.user_id = auth.uid()
+  )
+);
+```
+
+### user_bookmarks
+```sql
+CREATE POLICY "Users can only access their own bookmarks" ON user_bookmarks
+FOR ALL USING (auth.uid() = user_id);
+```
 
 ## Performance Optimizations
 
-The recommendation system has been optimized for faster response times:
+### Caching Strategy
+- **OpenAI Embeddings**: Cached for 1 hour
+- **Qloo Recommendations**: Cached for 30 minutes
+- **Qloo Entity Details**: Cached for 2 hours
+- **User Tastes**: Cached for 15 minutes
+- **Entity Search**: Cached for 1 hour
 
-### Response Limits
-- **Qloo API Results**: Limited to 8 recommendations per request using the `take` parameter
-- **Entity Resolution**: Reduced to 3 entities per search term
-- **Similar Tastes**: Limited to 6 similar entries for context
+### Database Optimizations
+- Vector similarity search using pgvector
+- Indexed foreign keys and timestamps
+- Efficient RLS policies
 
-### Performance Benefits
-- **Faster API Calls**: Reduced data transfer and processing time
-- **Quicker GPT Processing**: Smaller prompts with fewer results
-- **Better User Experience**: Faster response times
-- **Reduced Costs**: Fewer API calls and tokens used
+## Location Extraction Rules
 
-## Entity Name Cleaning
+### Supported Location Types
+- **Countries**: "Japan", "United States", "France"
+- **Cities**: "Tokyo", "New York", "Paris"
+- **States/Regions**: "California", "Île-de-France"
+- **Neighborhoods**: "Shibuya", "Manhattan"
+- **Continents**: "Asia", "Europe" (expanded to countries)
 
-The system now includes intelligent entity name cleaning and contextualization:
+### Location Processing
+1. **GPT Extraction**: Uses OpenAI to identify location entities
+2. **Continent Expansion**: Converts continents to country arrays
+3. **Qloo Integration**: Uses `filter.location.query` for geographic filtering
+4. **Radius Control**: Sets `filter.location.radius = 0` for precise location filtering when location is found
 
-### `cleanEntityNames()` Function
-- **Purpose**: Cleans and contextualizes entity names based on user query and taste history
-- **Input**: Raw entity names, user query, similar taste entries
-- **Output**: Cleaned, relevant entity names optimized for recommendation systems
-- **Features**:
-  - Removes generic terms (e.g., "restaurant", "place")
-  - Adds context from user's taste history
-  - Makes names more searchable and specific
-  - Ensures names are concise but descriptive
+### Location Filtering Logic
+```javascript
+// When location is found (single or multiple)
+if (location || locationArray) {
+  params['filter.location.query'] = location || locationArray;
+  params['filter.location.radius'] = 0; // Precise location filtering
+}
 
-### Location Extraction Rules
-- **Location Support**: Location extraction supports specific countries, cities, states, neighborhoods, and continents
-- **Multiple Locations**: Qloo API supports arrays of locations in a single request using `filter.location.query`
-- **Flexible Input**: GPT can return locations as single strings or arrays of multiple locations
-- **Geographic Filtering**: Uses `filter.location.query` to filter results to specific geographic locations
-- **Qloo API Compatibility**: The Qloo search API supports fuzzy-matched location queries
-- **Smart Continent Handling**: Automatically expands continents into multiple specific countries and cultural cuisines
-- **Examples**:
-  - ✅ "Japan" → location: "Japan" (country)
-  - ✅ "United States" → location: "United States" (country)
-  - ✅ "New York City" → location: "New York City" (city)
-  - ✅ "Los Angeles" → location: "Los Angeles" (city)
-  - ✅ "Lower East Side" → location: "Lower East Side" (neighborhood)
-  - ✅ "California" → location: "California" (state)
-  - 🌍 "Asia" → location: null, location_array: ["China", "Japan", "Thailand", "Korea", "Vietnam", "India"], entity_names: ["Asian cuisine", "Chinese restaurants", "Japanese restaurants", ...]
-  - 🌍 "Europe" → location: null, location_array: ["France", "Italy", "Spain", "Germany", "Netherlands", "Switzerland"], entity_names: ["European cuisine", "Italian restaurants", "French restaurants", ...]
-  - 📍 "China and Japan" → location: null, location_array: ["China", "Japan"], entity_names: ["Chinese cuisine", "Japanese cuisine", ...]
-  - 📍 "New York and Los Angeles" → location: null, location_array: ["New York City", "Los Angeles"], entity_names: ["dining", "restaurants", ...]
-  - ❌ "Middle East" → location: null (region too broad)
-
-
-
-## Next Steps
-- Implement `/api/recommend` and `/api/booking` endpoints
-- Integrate Qloo and Google Maps APIs
-
----
-
-## Supabase SQL Setup
-
-### Table: user_tastes
-```sql
-create table if not exists user_tastes (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) not null,
-  input text,
-  embedding vector(1536),
-  timestamp timestamptz default now()
-);
+// When no location is found
+// No radius parameter is set, allowing broader search
 ```
 
-### Enable pgvector Extension
-```sql
-create extension if not exists vector;
+### Radius Parameter Behavior
+- **Location Found**: `filter.location.radius = 0` ensures precise location-based filtering
+- **No Location**: Radius parameter is omitted, allowing broader geographic search
+- **Benefits**: More accurate results when location is specified, flexible search when location is unknown
+
+## Recommendation Specificity Control
+
+### Weight Parameter System
+The system uses Qloo's `signal.interests.entities.weight` parameter to control recommendation specificity:
+
+```javascript
+// Weight ranges and their effects
+1-10:   General/broad recommendations (e.g., "restaurants")
+11-30:  Moderately specific (e.g., "Italian restaurants") 
+31-50:  Very specific (e.g., "authentic Italian restaurants in downtown")
 ```
 
-### Similarity Function: match_user_tastes
-```sql
--- Returns the top N most similar user_tastes entries for the same user (excluding the given id)
-create or replace function match_user_tastes(
-  query_embedding vector(1536),
-  match_count int,
-  exclude_id uuid,
-  user_id uuid
-)
-returns table (
-  id uuid,
-  input text,
-  embedding vector(1536),
-  created_at timestamptz,
-  similarity float
-) language plpgsql as $$
-begin
-  return query
-    select 
-      user_tastes.id, 
-      user_tastes.input, 
-      user_tastes.embedding, 
-      user_tastes.timestamp,
-      (user_tastes.embedding <#> query_embedding) as similarity
-    from user_tastes
-    where user_tastes.id != exclude_id
-      and user_tastes.user_id = match_user_tastes.user_id
-    order by user_tastes.embedding <#> query_embedding
-    limit match_count;
-end;
-$$;
+### Implementation Flow
+1. **Frontend**: AI determines weight based on user query specificity
+2. **Taste API**: Stores weight with embedding
+3. **Recommend API**: Uses weight in Qloo API call
+4. **Qloo API**: Applies weight to influence result relevance
+
+### Qloo API Integration
+```javascript
+// Qloo API parameters with weight
+params = {
+  'filter.type': `urn:entity:${entityType}`,
+  'signal.interests.entities': entityIds.join(','),
+  'signal.interests.entities.weight': signalWeight, // 1-50 range
+  'take': 50
+}
 ```
 
-- `<#>` is the cosine distance operator in pgvector.
-- Adjust `vector(1536)` if your embedding size changes. 
+## Enhanced Logging & Debugging
 
----
+### Request Logging
+- Full request parameters logged before API calls
+- Response status and data structure validation
+- Error details with context for debugging
 
-## 🎯 **Comprehensive System Summary**
+### Qloo API Monitoring
+- Request parameters logged in JSON format
+- Response analysis with result type breakdown
+- Error handling with specific status code checks
+- Location validation for 400 errors
+- Weight parameter logging for specificity control
 
-### **Backend Improvements**
+### Entity Processing
+- GPT extraction results logged
+- Entity type validation and processing
+- Location expansion and filtering details
 
-#### **🔐 User Authentication & Security**
-- **Updated `match_user_tastes` function** to include `user_id` parameter
-- **Modified recommendation controller** to filter by user ID
-- **Enhanced taste controller** to ensure user ownership
-- **Added user isolation** - users can only see their own taste data
+## Error Handling
 
-#### **🚀 Performance Optimizations**
-- **Limited Qloo results** to 8 recommendations per request using the `take` parameter
-- **Reduced entity resolution** from 4 to 3 entities per search term
-- **Added API limit parameter** (`take: 8`) to Qloo calls
-- **Faster response times** and reduced costs
+### Common Error Scenarios
+1. **Invalid JWT**: Returns 401 Unauthorized
+2. **Missing Input**: Returns 400 Bad Request
+3. **Qloo API Errors**: Logged and handled gracefully
+4. **Database Errors**: Proper error messages returned
 
-#### **🧠 AI Entity Processing**
-- **Enhanced `extractEntitiesWithGPT`** function with better entity extraction
-- **Added `cleanEntityNames`** function for contextual entity cleaning
-- **Improved entity name relevance** based on user query and taste history
-- **Better entity type classification** for Qloo API compatibility
-- **Smart location extraction** supporting specific countries, cities, localities, and continents
-- **Flexible location handling** supporting both single locations and arrays of multiple locations
-- **Intelligent continent handling** with automatic expansion into multiple specific countries and cultural cuisines
-- **Multiple location support** using JavaScript arrays for cleaner continent-to-countries expansion
-- **Geographic filtering** using `filter.location.query` for precise location-based results
+### Graceful Degradation
+- Qloo API failures don't break the entire flow
+- Fallback to entity search when needed
+- Partial results returned when possible
 
-#### **📊 Enhanced Logging & Debugging**
-- **Added location logging** in recommendation controller
-- **Debug console logs** for entity extraction and processing
-- **400 Error Detection** for location not found errors with detailed debugging info
-- **Location validation** with individual country name validation and length checks
-- **Continent expansion logging** to track country array generation
-- **API parameter validation** with detailed request logging
-- **Qloo API Response Logging** with status codes, result counts, and sample results
-- **Entity Resolution Logging** with detailed search results and entity ID mapping
-- **Comprehensive Error Logging** with full request/response context for debugging
-- **Better error tracking** and debugging capabilities
+## System Summary
 
-### **Database Schema Changes**
+The backend orchestrates multiple services:
+- **Supabase**: User authentication and data storage
+- **OpenAI**: Natural language understanding and embeddings
+- **Qloo API**: Cultural insights and recommendations with specificity control
+- **PostgreSQL**: Vector similarity search and data persistence
 
-#### **🗄️ Supabase Updates**
-- **Updated `user_tastes` table** to include `user_id` field
-- **Enhanced RPC function** with user filtering
-- **Better data isolation** between users
-
-### **Key Achievements**
-
-#### **Performance**
-- ⚡ **Faster API responses** (limited to 8 results)
-- 💰 **Reduced costs** (fewer API calls)
-- 🚀 **Better caching** and optimization
-
-#### **Security**
-- 🔒 **User data isolation** (proper user filtering)
-- 🛡️ **Authentication enforcement** (JWT validation)
-- 🔐 **Ownership validation** (user can only access their own data)
-
-#### **AI Intelligence**
-- 🧠 **Smarter entity extraction** and cleaning
-- 🎯 **TasteTrip AI concept** (analyze cultural tastes → recommend travel experiences)
-- 💬 **Better conversation flow** with appropriate actions
+The system provides a robust foundation for personalized cultural recommendations with comprehensive error handling, performance optimizations, and intelligent specificity control based on user query context.

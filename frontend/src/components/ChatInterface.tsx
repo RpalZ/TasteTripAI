@@ -74,6 +74,7 @@ import { Menu, X, Sparkles, ArrowLeft } from 'lucide-react'
 import { useTheme } from './ThemeContext'
 import { supabase } from '@/utils/supabaseClient'
 import { SYSTEM_PROMPT } from '@/constants/systemPrompt'
+import { useChatContext } from '@/context/ChatContext'
 import axios from 'axios'
 
 // const systemPrompt = SYSTEM_PROMPT
@@ -93,6 +94,24 @@ interface Recommendation {
   location?: string
   lat?: number
   lng?: number
+  // Add Qloo-specific fields for detail page navigation
+  entity_id?: string
+  name?: string
+  subtype?: string
+  properties?: {
+    address?: string
+    phone?: string
+    business_rating?: number
+    keywords?: Array<string | { name: string; count?: number }>
+    images?: Array<{ url: string; type: string }>
+    price_level?: number
+  }
+  popularity?: number
+  location_data?: {
+    lat: number
+    lon: number
+    geohash: string
+  }
 }
 
 interface gptResponse {
@@ -100,7 +119,8 @@ interface gptResponse {
   action: {
     toolcall: "recommend" | "idle" | "analyze",
     recommendQuery?: string,
-    toAnalyze?: string
+    toAnalyze?: string,
+    weight?: number
   }
 }
 
@@ -117,6 +137,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
   const [isRecommending, setIsRecommending] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const { theme } = useTheme();
+  const { saveRecommendationsToStorage, loadRecommendationsFromStorage, clearRecommendationsFromStorage } = useChatContext();
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const hasSentInitialQuery = useRef(false); // <-- add this
@@ -153,6 +174,20 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
             timestamp: new Date(msg.created_at),
           }))
         )
+        
+        // Try to load recommendations from storage for this conversation
+        if (conversationId) {
+          console.log('🔍 Loading recommendations from localStorage for conversation:', conversationId)
+          const storedRecommendations = loadRecommendationsFromStorage(conversationId)
+          if (storedRecommendations && storedRecommendations.length > 0) {
+            console.log('🔄 Restoring recommendations from storage:', storedRecommendations.length)
+            setRecommendations(storedRecommendations)
+          } else {
+            console.log('📭 No stored recommendations found for conversation:', conversationId)
+          }
+        } else {
+          console.log('⚠️ No conversationId available, skipping localStorage load')
+        }
       }
       setIsLoading(false)
     }
@@ -280,6 +315,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
       const action = parsedData.action.toolcall
       const recommendQuery = parsedData.action.recommendQuery
       const toAnalyze = parsedData.action.toAnalyze
+      const weight = parsedData.action.weight || 10 // Default weight if not specified
 
       //getting token for requests
 
@@ -296,7 +332,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
           setIsRecommending(true)
 
           // use recommend query vro
-          const payload = {input: recommendQuery}
+          const payload = {input: recommendQuery, weight: weight}
           const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/taste`
           console.log('POST', endpoint, 'payload:', payload, 'headers:', header)
           let embed;
@@ -304,6 +340,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
             const response = await axios.post(endpoint, payload, header)
             embed = response.data
             console.trace('Taste embedding response:', embed)
+            console.log('⚖️ Weight from taste response:', embed.weight)
           } catch (error: any) {
             if (error.response) {
               console.error('Taste API 400 error:', error.response.data)
@@ -319,10 +356,11 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
 
           //now to do the recommendation type shi fye
           const recEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/recommend`
-          console.log('POST', recEndpoint, 'payload:', embed, 'headers:', header)
+          const recPayload = { embedding_id: embed.embedding_id, weight: embed.weight }
+          console.log('POST', recEndpoint, 'payload:', recPayload, 'headers:', header)
           let recommendResponse;
           try {
-            recommendResponse = await axios.post(recEndpoint, embed, header)
+            recommendResponse = await axios.post(recEndpoint, recPayload, header)
           } catch (error: any) {
             if (error.response) {
               console.error('Recommend API 400 error:', error.response.data)
@@ -335,20 +373,99 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
             setIsRecommending(false)
             break;
           }
-          //set up recommendations  
+          //set up recommendations
+          console.log('🔍 Full recommendation response:', recommendResponse.data);
+          console.log('📊 Results array:', recommendResponse.data.results);
+          console.log('📝 Explanation object:', recommendResponse.data.explanation);
+          console.log('📋 Recommendations array:', recommendResponse.data.explanation?.recommendations);
+          
+          // Check if results exist and is an array
+          if (!recommendResponse.data.results || !Array.isArray(recommendResponse.data.results)) {
+            console.error('❌ Invalid results structure:', recommendResponse.data.results);
+            aiContent = "I encountered an issue processing the recommendations. Please try your request again.";
+            setRecommendations([]);
+            setIsRecommending(false);
+            break;
+          }
+          
           const recommendationArr = recommendResponse.data.results?.map((m: any, i: number) => {
-            return {
-              title: m.name,
-              type: m.subtype?.split(':').pop(),
-              description: recommendResponse.data.explanation?.recommendations[i],
-              location: m.address,
-              lat: m.location?.lat,
-              lon: m.location?.lon
+            try {
+              // Safely access the description with fallback
+              const description = recommendResponse.data.explanation?.recommendations?.[i] || 
+                                 `${m.name || 'Unknown Place'} - A great place to visit based on your preferences.`;
+              
+              return {
+                title: m.name || 'Unknown Place',
+                type: m.subtype?.split(':').pop() || 'place',
+                description: description,
+                location: m.properties?.address || m.address || 'Location not specified',
+                lat: m.location?.lat || null,
+                lng: m.location?.lon || null,
+                // Add Qloo-specific fields for detail page navigation
+                entity_id: m.entity_id || `unknown_${i}`,
+                name: m.name || 'Unknown Place',
+                subtype: m.subtype || 'urn:entity:place',
+                properties: {
+                  address: m.properties?.address || m.address,
+                  phone: m.properties?.phone,
+                  business_rating: m.properties?.business_rating,
+                  keywords: m.properties?.keywords,
+                  images: m.properties?.images,
+                  price_level: m.properties?.price_level,
+                  website: m.properties?.website
+                },
+                popularity: m.popularity || 0,
+                location_data: {
+                  lat: m.location?.lat || null,
+                  lon: m.location?.lon || null,
+                  geohash: m.location?.geohash || null
+                }
+              }
+            } catch (itemError) {
+              console.error('❌ Error processing recommendation item:', itemError, m);
+              return {
+                title: 'Error Loading Recommendation',
+                type: 'place',
+                description: 'This recommendation could not be loaded properly.',
+                location: 'Unknown',
+                lat: null,
+                lng: null,
+                entity_id: `error_${i}`,
+                name: 'Error Loading Recommendation',
+                subtype: 'urn:entity:place',
+                properties: {},
+                popularity: 0,
+                location_data: { lat: null, lon: null, geohash: null }
+              }
             }
-          })
-          console.log(recommendationArr)
+          }) || []
+          console.log('📊 Final recommendation array:', recommendationArr)
+          console.log('🔍 Current conversationId:', conversationId)
+          console.log('🔍 Current convId:', convId)
+          
           if (recommendationArr.length == 0) {
             aiContent = "I searched high and low, but I couldn't find any specific recommendations for you right now. Let me know if you'd like to try a different search or explore something else!"
+          } else {
+            // Save recommendations to storage when we get new ones
+            const currentConversationId = conversationId || convId
+            console.log('💾 Attempting to save recommendations:', {
+              conversationId,
+              convId,
+              currentConversationId,
+              recommendationCount: recommendationArr.length,
+              hasConversationId: !!currentConversationId
+            })
+            
+            if (currentConversationId) {
+              console.log('💾 Saving recommendations to localStorage:', {
+                conversationId: currentConversationId,
+                recommendationCount: recommendationArr.length,
+                hasConversationId: !!currentConversationId
+              })
+              saveRecommendationsToStorage(recommendationArr, currentConversationId)
+            } else {
+              console.log('⚠️ No conversationId available, skipping localStorage save')
+            }
           }
           setRecommendations(recommendationArr)
           console.log('Setting isRecommending to false')
@@ -430,6 +547,9 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
       
       console.log('✅ Conversation deleted successfully');
       
+      // Clear stored recommendations for this conversation
+      clearRecommendationsFromStorage(conversationId);
+      
       // Reset UI
       setMessages([
         {
@@ -457,16 +577,16 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
-      <div
-        style={{
-          background: 'var(--color-bg-primary)',
-          color: 'var(--color-text-primary)', 
-          position: 'relative',
-          minHeight: '100vh',
-          height: '100vh',
-        }}
-        className="flex w-full m-0 p-0 relative overflow-hidden min-h-screen"
-      >
+    <div
+      style={{
+        background: 'var(--color-bg-primary)',
+        color: 'var(--color-text-primary)', 
+        position: 'relative',
+        minHeight: '100vh',
+        height: '100vh',
+      }}
+      className="flex w-full m-0 p-0 relative overflow-hidden min-h-screen"
+    >
       {/* Subtle Radial Gradient Background for Chat Area */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div
@@ -488,11 +608,11 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
       <div 
         className="flex flex-row w-full relative z-10 gap-4 md:flex-row flex-col flex-1 min-h-screen h-full transform transition-all duration-700 ease-out"
         style={{
-          padding: '10px',
-          minHeight: 'calc(100vh - 10px)',
-          height: 'calc(100vh - 10px)',
-          borderRadius: '16px',
-          overflow: 'hidden',
+        padding: '10px',
+        minHeight: 'calc(100vh - 10px)',
+        height: 'calc(100vh - 10px)',
+        borderRadius: '16px',
+        overflow: 'hidden',
           background: 'var(--color-bg-primary)',
           animation: 'fadeInUp 0.8s ease-out forwards'
         }}
@@ -553,7 +673,7 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
               >
                 Delete Conversation
               </button>
-              <button
+            <button
                 onClick={async () => {
                   try {
                     // Get user ID from Supabase session
@@ -580,10 +700,10 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
                     
                     // Create the welcome message
                     const welcomeMessage = {
-                      id: '1',
+                    id: '1',
                       type: 'ai' as 'ai',
-                      content: "Hello! I'm your cultural discovery assistant. Tell me about your tastes - what kind of food, music, places, or experiences do you enjoy? I'll help you discover amazing cultural recommendations tailored just for you! ✨",
-                      timestamp: new Date(),
+                    content: "Hello! I'm your cultural discovery assistant. Tell me about your tastes - what kind of food, music, places, or experiences do you enjoy? I'll help you discover amazing cultural recommendations tailored just for you! ✨",
+                    timestamp: new Date(),
                     };
                     
                     // Save welcome message to database
@@ -618,11 +738,13 @@ export default function ChatInterface({ initialQuery, onBack, conversationId, on
                   }
                 }}
                 className="ml-4 px-4 py-2 rounded-xl font-semibold transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg transform hover:-translate-y-1"
-                style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
-              >
-                New Conversation
-              </button>
-              <div style={{ width: 40 }} /> {/* Placeholder for alignment */}
+              style={{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
+            >
+              New Conversation
+            </button>
+            
+
+            <div style={{ width: 40 }} /> {/* Placeholder for alignment */}
             </div>
           </header>
           {/* Messages */}

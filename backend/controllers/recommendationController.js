@@ -2,6 +2,7 @@ const supabase = require('../services/supabaseService');
 const { getQlooRecommendations, resolveEntityIds } = require('../services/qlooService');
 const { buildRecommendationPrompt } = require('../utils/promptBuilder');
 const { generateEmbedding, extractEntitiesWithGPT } = require('../services/openaiService');
+const cacheService = require('../services/cacheService');
 const OpenAI = require('openai');
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -13,8 +14,12 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  */
 exports.recommend = async (req, res) => {
   try {
-    const { embedding_id } = req.body;
+    const { embedding_id, weight } = req.body;
     if (!embedding_id) return res.status(400).json({ error: 'embedding_id is required' });
+    
+    // Use weight parameter for Qloo API signal strength (default to 10 if not provided)
+    const signalWeight = weight || 10;
+    console.log('⚖️ Using signal weight for Qloo API:', signalWeight);
 
     // Get user ID from JWT
     const userId = req.user.sub;
@@ -49,6 +54,8 @@ exports.recommend = async (req, res) => {
     console.log('similarEntries', similarEntries);
     const extraction = await extractEntitiesWithGPT(userInput, similarEntries);
     const entityType = extraction.entity_type.toLowerCase().split(' ').join('');
+    console.log('🏷️  Raw entity type from GPT:', extraction.entity_type);
+    console.log('🏷️  Processed entity type:', entityType);
     const entityNames = extraction.entity_names;
 
     //once auth is completed, add location to the extraction from the user profile
@@ -70,12 +77,21 @@ exports.recommend = async (req, res) => {
     }
 
     // Resolve entity names to Qloo entity IDs
+    console.log(`🔍 Calling resolveEntityIds with names: [${entityNames.join(', ')}], type: "${entityType}", location: "${location}"`);
     const entityResolution = await resolveEntityIds(entityNames, entityType, location);
     const entityIds = entityResolution.entityIds;
     const entityDetails = entityResolution.entityDetails;
-    console.log('entityIds', entityIds);
-    console.log('entityDetails count:', entityDetails.length);
+    console.log('✅ Resolved entityIds:', entityIds);
+    console.log('✅ Resolved entityDetails count:', entityDetails.length);
+    console.log('✅ Sample entityDetails:', entityDetails.slice(0, 2).map(e => ({name: e.name, type: e.subtype, location: e.location})));
+    
     if (!entityIds.length) {
+      console.error('❌ No valid Qloo entity IDs found for input:', {
+        userInput,
+        entityNames,
+        entityType,
+        location
+      });
       return res.status(400).json({ error: 'No valid Qloo entity IDs found for input.' });
     }
 
@@ -83,24 +99,40 @@ exports.recommend = async (req, res) => {
     const params = {
       'filter.type': `urn:entity:${entityType}`,
       'signal.interests.entities': entityIds.join(','),
-      'take': 10 // Increased limit to get more results
+      'signal.interests.entities.weight': signalWeight,
+      'take': 20 // Increased limit to get more results for better filtering
     };
+    
+    // Add cuisine/food-specific filtering for better results
+    if (entityType === 'place' && entityNames.some(name => 
+      ['cuisine', 'food', 'restaurant', 'sushi', 'pizza', 'thai', 'chinese', 'italian', 'mexican', 'japanese'].some(food => 
+        name.toLowerCase().includes(food)
+      )
+    )) {
+      // Use higher take for food queries to get better variety
+      params.take = 20;
+      console.log('🍜 Detected food/cuisine query - using enhanced filtering');
+    }
     
 
     // Handle location parameters - support multiple locations
     if (locationArray && locationArray.length > 0) {
       // Use location array for multiple countries (from continent expansion)
       params['filter.location.query'] = locationArray;
+      params['filter.location.radius'] = 0; // Set radius to 0 for precise location filtering
       console.log('🌍 Added location array to Qloo params (filter):', locationArray);
       console.log('📊 Location array length:', locationArray.length);
+      console.log('🎯 Set radius to 0 for precise location filtering');
     } else if (location) {
       
         // Location-based entities: use filter.location.query for geographic filtering
         params['filter.location.query'] = location;
+        params['filter.location.radius'] = 0; // Set radius to 0 for precise location filtering
         console.log('📍 Added single location to Qloo params (filter):', location);
+        console.log('🎯 Set radius to 0 for precise location filtering');
    
     } else {
-      console.log('🚫 No location data available');
+      console.log('🚫 No location data available - radius parameter not set');
     }
     // Call Qloo API with error handling for location queries
     let qlooResults = [];
@@ -119,13 +151,33 @@ exports.recommend = async (req, res) => {
       
       if (qlooResults && qlooResults.length > 0) {
         hasQlooResults = true;
-        console.log('🏆 Top Qloo Results:');
-        qlooResults.slice(0, 3).forEach((result, index) => {
-          console.log(`  ${index + 1}. ${result.name || result.entity_id} (${result.subtype || 'unknown type'})`);
+        console.log('🏆 Qloo API Results Analysis:');
+        console.log(`  📊 Total results: ${qlooResults.length}`);
+        
+        // Analyze result types
+        const resultTypes = {};
+        qlooResults.forEach(result => {
+          const type = result.subtype || 'unknown';
+          resultTypes[type] = (resultTypes[type] || 0) + 1;
+        });
+        console.log('  📋 Result types breakdown:', resultTypes);
+        
+        // Log top results with detailed info
+        qlooResults.slice(0, 5).forEach((result, index) => {
+          console.log(`  ${index + 1}. "${result.name || result.entity_id}"`);
+          console.log(`     Type: ${result.subtype || 'unknown type'}`);
+          console.log(`     Address: ${result.properties?.address || 'N/A'}`);
+          console.log(`     Keywords: ${result.properties?.keywords?.slice(0, 3).join(', ') || 'N/A'}`);
         });
         
-        if (qlooResults.length > 3) {
-          console.log(`  ... and ${qlooResults.length - 3} more results`);
+        if (qlooResults.length > 5) {
+          console.log(`  ... and ${qlooResults.length - 5} more results`);
+        }
+        
+        // Warn if we're not getting place results for food queries
+        if (entityType === 'place' && entityNames.some(name => name.toLowerCase().includes('sushi'))) {
+          const placeResults = qlooResults.filter(r => r.subtype && r.subtype.includes('place'));
+          console.log(`🍜 Sushi query validation: ${placeResults.length}/${qlooResults.length} results are places`);
         }
       } else {
         console.log('⚠️  No results returned from Qloo API');
@@ -209,7 +261,7 @@ exports.recommend = async (req, res) => {
       messages: [
         { role: 'system', content: prompt },
       ],
-      max_tokens: 1500,
+      max_tokens: 10000,
       response_format: { type: 'json_object' },
     });
     let gptText = gptResponse.choices[0].message.content;
