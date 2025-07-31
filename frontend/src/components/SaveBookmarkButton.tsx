@@ -37,6 +37,7 @@ export default function SaveBookmarkButton({
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showError, setShowError] = useState(false)
+  const [savedRecommendations, setSavedRecommendations] = useState<any[]>([])
 
   // Check initial bookmark status
   useEffect(() => {
@@ -213,4 +214,6 @@ export default function SaveBookmarkButton({
       {renderContent()}
     </button>
   )
-} 
+}
+
+// (Removed invalid block rendering savedRecommendations outside of a component)
