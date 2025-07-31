@@ -5,6 +5,8 @@ import { BarChart3, Clock, Star, Trash2, User, Settings, Moon, Sun } from 'lucid
 import { useTheme } from './ThemeContext'
 import { useUserProfile } from '../utils/useUserProfile'
 import DashboardStats from './DashboardStats'
+import { supabase } from '../utils/supabaseClient' // <-- ADD THIS LINE
+import SaveBookmarkButton from './SaveBookmarkButton'
 
 interface TasteSummary {
   id: string
@@ -16,6 +18,7 @@ interface TasteSummary {
 
 interface SavedRecommendation {
   id: string
+  qloo_id: string
   title: string
   type: string
   location: string
@@ -31,6 +34,12 @@ export default function Dashboard() {
   // Location state
   const [location, setLocation] = useState<string>('Fetching location...')
 
+  // Supabase-driven state for bookmarks and recent queries
+  const [savedRecommendations, setSavedRecommendations] = useState<SavedRecommendation[]>([])
+  const [bookmarksLoading, setBookmarksLoading] = useState(true)
+  const [tasteSummaries, setTasteSummaries] = useState<TasteSummary[]>([])
+  const [queriesLoading, setQueriesLoading] = useState(true)
+
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocation('Location unavailable')
@@ -41,12 +50,9 @@ export default function Dashboard() {
         const { latitude, longitude } = pos.coords
         try {
           const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-          console.log('Google Maps API Key:', apiKey)
           const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
-          console.log('Geocode URL:', url)
           const response = await fetch(url)
           const data = await response.json()
-          console.log('Geocode API response:', data)
           if (data.status === 'OK' && data.results.length > 0) {
             const address = data.results[0].address_components
             const cityObj = address.find((c: any) => c.types.includes('locality')) ||
@@ -61,76 +67,80 @@ export default function Dashboard() {
             setLocation('Location unavailable')
           }
         } catch (err) {
-          console.error('Geolocation error:', err)
           setLocation('Location unavailable')
         }
       },
-      (err) => {
-        console.error('Geolocation permission error:', err)
-        setLocation('Location unavailable')
-      }
+      () => setLocation('Location unavailable')
     )
   }, [])
 
-  // Mock data
-  const tasteSummaries: TasteSummary[] = [
-    {
-      id: '1',
-      query: 'I love jazz music and Italian cuisine in cozy settings',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      category: 'Food & Music',
-      recommendations: 8
-    },
-    {
-      id: '2',
-      query: 'Modern art galleries and contemporary fashion boutiques',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      category: 'Culture & Fashion',
-      recommendations: 12
-    },
-    {
-      id: '3',
-      query: 'Hiking trails with scenic views and craft breweries',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-      category: 'Travel & Food',
-      recommendations: 6
+  // Move fetchBookmarks out so it can be called after removal/bookmark change
+  const fetchBookmarks = async () => {
+    setBookmarksLoading(true)
+    const { data: session } = await supabase.auth.getSession()
+    if (!session?.session) {
+      setSavedRecommendations([])
+      setBookmarksLoading(false)
+      return
     }
-  ]
+    const { data, error } = await supabase
+      .from('user_bookmarks')
+      .select('id, qloo_id, name, type, location, created_at, rating')
+      .eq('user_id', session.session.user.id)
+      .order('created_at', { ascending: false })
+    if (data) {
+      setSavedRecommendations(
+        data.map((b: any) => ({
+          ...b,
+          title: b.name, // Map 'name' from DB to 'title' for UI
+          savedAt: b.created_at ? new Date(b.created_at) : new Date(),
+          qloo_id: b.qloo_id, // Ensure qloo_id is present for SaveBookmarkButton
+        }))
+      )
+    } else {
+      setSavedRecommendations([])
+    }
+    setBookmarksLoading(false)
+  }
 
-  const savedRecommendations: SavedRecommendation[] = [
-    {
-      id: '1',
-      title: 'Blue Note Jazz Club',
-      type: 'Music',
-      location: 'New York, NY',
-      savedAt: new Date(Date.now() - 1000 * 60 * 60),
-      rating: 5
-    },
-    {
-      id: '2',
-      title: 'Osteria Francescana',
-      type: 'Food',
-      location: 'Modena, Italy',
-      savedAt: new Date(Date.now() - 1000 * 60 * 60 * 3),
-      rating: 5
-    },
-    {
-      id: '3',
-      title: 'Museum of Modern Art',
-      type: 'Culture',
-      location: 'New York, NY',
-      savedAt: new Date(Date.now() - 1000 * 60 * 60 * 6),
-      rating: 4
-    },
-    {
-      id: '4',
-      title: 'Sagrada Familia',
-      type: 'Culture',
-      location: 'Barcelona, Spain',
-      savedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-      rating: 5
+  useEffect(() => {
+    fetchBookmarks()
+  }, [])
+
+  // Fetch recent queries from Supabase
+  useEffect(() => {
+    const fetchRecentQueries = async () => {
+      setQueriesLoading(true)
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session) {
+        setTasteSummaries([])
+        setQueriesLoading(false)
+        return
+      }
+      const { data, error } = await supabase
+        .from('chats')
+        .select('id, message, created_at')
+        .eq('user_id', session.session.user.id)
+        .eq('sender_type', 'user')
+        .order('created_at', { ascending: false })
+        .limit(10)
+      if (data) {
+        setTasteSummaries(
+          data.map((q: any) => ({
+            id: q.id,
+            query: q.message,
+            timestamp: q.created_at ? new Date(q.created_at) : new Date(),
+            category: '', // You can enhance this if you store categories
+            recommendations: 0, // Or fetch actual recommendations count if available
+          }))
+        )
+      } else {
+        setTasteSummaries([])
+      }
+      setQueriesLoading(false)
     }
-  ]
+    fetchRecentQueries()
+  }, [])
 
   const formatTimeAgo = (timestamp: Date) => {
     const now = new Date()
@@ -157,6 +167,19 @@ export default function Dashboard() {
     if (profile?.username) return profile.username;
     return 'User';
   };
+
+  // Handler to remove a bookmark and refresh list (now uses qloo_id)
+  const handleRemoveBookmark = async (qlooId: string) => {
+    setBookmarksLoading(true)
+    const { data: session } = await supabase.auth.getSession()
+    if (!session?.session) return
+    await supabase
+      .from('user_bookmarks')
+      .delete()
+      .eq('user_id', session.session.user.id)
+      .eq('qloo_id', qlooId)
+    await fetchBookmarks()
+  }
 
   return (
     <div style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)' }} className="min-h-screen pt-16 p-6 transition-colors duration-300">
@@ -202,76 +225,92 @@ export default function Dashboard() {
         {activeTab === 'tastes' && (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Recent Taste Queries</h2>
-            <div className="grid gap-4">
-              {tasteSummaries.map((summary) => (
-                <div
-                  key={summary.id}
-                  className="p-6 rounded-2xl transition-colors duration-300"
-                  style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                        "{summary.query}"
-                      </p>
-                      <div className="flex items-center space-x-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="px-3 py-1 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200">
-                          {summary.category}
-                        </span>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{formatTimeAgo(summary.timestamp)}</span>
+            {queriesLoading ? (
+              <p>Loading...</p>
+            ) : tasteSummaries.length === 0 ? (
+              <p>No recent queries found.</p>
+            ) : (
+              <div className="grid gap-4">
+                {tasteSummaries.map((summary) => (
+                  <div
+                    key={summary.id}
+                    className="p-6 rounded-2xl transition-colors duration-300"
+                    style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                          "{summary.query}"
+                        </p>
+                        <div className="flex items-center space-x-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          <span className="px-3 py-1 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200">
+                            {summary.category || 'Query'}
+                          </span>
+                          <div className="flex items-center space-x-1">
+                            <Clock className="w-4 h-4" />
+                            <span>{formatTimeAgo(summary.timestamp)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-sky-500">{summary.recommendations}</div>
-                      <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>recommendations</div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-sky-500">{summary.recommendations ?? ''}</div>
+                        <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>recommendations</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === 'saved' && (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Saved Recommendations</h2>
-            <div className="grid gap-4">
-              {savedRecommendations.map((rec) => (
-                <div
-                  key={rec.id}
-                  className="p-6 rounded-2xl transition-colors duration-300"
-                  style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{getTypeIcon(rec.type)}</span>
-                      <div>
-                        <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{rec.title}</h3>
-                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{rec.location}</p>
+            {bookmarksLoading ? (
+              <p>Loading...</p>
+            ) : savedRecommendations.length === 0 ? (
+              <p>You have no saved locations yet.</p>
+            ) : (
+              <div className="grid gap-4">
+                {savedRecommendations.map((rec) => (
+                  <div
+                    key={rec.id}
+                    className="p-6 rounded-2xl transition-colors duration-300"
+                    style={{ background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-card-border)' }}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">{getTypeIcon(rec.type)}</span>
+                        <div>
+                          <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{rec.title}</h3>
+                          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{rec.location}</p>
+                        </div>
                       </div>
+                      {/* Use SaveBookmarkButton for toggle and reactivity */}
+                      <SaveBookmarkButton
+                        qlooId={rec.qloo_id}
+                        name={rec.title}
+                        address={rec.location}
+                        onBookmarkChange={fetchBookmarks}
+                        variant="icon" lat={0} lon={0} description={''}                      />
                     </div>
-                    <button className="p-2" style={{ color: 'var(--color-text-secondary)' }}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${i < (rec.rating || 0) ? 'text-yellow-400 fill-current' : ''}`}
-                          style={i < (rec.rating || 0) ? {} : { color: 'var(--color-text-secondary)' }}
-                        />
-                      ))}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${i < (rec.rating || 0) ? 'text-yellow-400 fill-current' : ''}`}
+                            style={i < (rec.rating || 0) ? {} : { color: 'var(--color-text-secondary)' }}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{formatTimeAgo(rec.savedAt)}</span>
                     </div>
-                    <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{formatTimeAgo(rec.savedAt)}</span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
