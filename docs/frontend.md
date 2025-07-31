@@ -4,7 +4,40 @@ A modern, responsive frontend for TasteTrip AI — your cultural discovery assis
 
 ---
 
-## 🚀 **Phase 5: Multi-Stop Itinerary Planning (Latest Feature)**
+## 🚀 **Phase 6: 3D Map Integration (Latest Feature)**
+
+### **Advanced 3D Map Functionality**
+- **3D Map Mode**: Toggle between 2D and 3D map views with tilt controls
+- **Interactive Tilt Controls**: Adjustable tilt slider (0° to 67.5°) for dynamic 3D viewing
+- **3D Buildings Rendering**: Realistic 3D building models in supported urban areas
+- **Vector Rendering**: High-performance vector-based map rendering for smooth 3D experience
+- **Map ID Integration**: Google Maps Map ID support for advanced features
+- **Reset 3D View**: One-click reset to default 45° tilt angle
+- **Seamless Mode Switching**: Maintain 3D state when changing map types
+- **Performance Optimized**: Efficient rendering with WebGL support
+
+### **Key Features**
+1. **3D Map Controls**
+   - Toggle 3D mode with dedicated button
+   - Real-time tilt adjustment with visual feedback
+   - Reset functionality for quick return to default view
+   - Integration with existing map type controls
+
+2. **Enhanced Visual Experience**
+   - 3D building models in urban areas
+   - Smooth tilt transitions and animations
+   - Vector-based rendering for crisp graphics
+   - Responsive controls with dark mode support
+
+3. **Technical Implementation**
+   - Google Maps Map ID with 3D buildings enabled
+   - Vector rendering type for optimal performance
+   - WebGL-based 3D graphics acceleration
+   - Fallback support for areas without 3D buildings
+
+---
+
+## 🚀 **Phase 5: Multi-Stop Itinerary Planning**
 
 ### **Complete Trip Planning System**
 - **ItineraryPlanner Component**: Full-featured interface for planning multi-destination trips
