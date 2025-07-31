@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useTheme } from './ThemeContext';
 import { GoogleMap as GoogleMapComponent, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
-import { Cloud, Wind, Thermometer, MapPin, Layers, Zap, Sun, Droplets } from 'lucide-react';
+import { Cloud, Wind, Thermometer, MapPin, Layers, Zap, Sun, Droplets, Box } from 'lucide-react';
 import { 
   getAirQuality, 
   getWeather, 
@@ -87,7 +87,7 @@ interface QlooRecommendation {
   }
 }
 
-type MapType = 'roadmap' | 'satellite' | 'hybrid' | 'terrain';
+type MapType = 'roadmap' | 'satellite' | 'hybrid' | 'terrain' | '3d' | '3d-satellite';
 
 interface GoogleMapProps {
   markers?: { lat: number; lng: number; }[];
@@ -141,6 +141,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const [mapType, setMapType] = useState<MapType>('roadmap');
   const [showControls, setShowControls] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<QlooRecommendation | null>(null);
+  const [is3DMode, setIs3DMode] = useState(false);
+  const [tilt, setTilt] = useState(0);
   const mapRef = useRef<google.maps.Map | null>(null);
 
   // New state variables for enhanced features
@@ -174,6 +176,14 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       setUserLocation({ ...propUserLocation, accuracy: 100 });
     }
   }, [propUserLocation]);
+
+  // Handle tilt changes when map is loaded and 3D mode is active
+  useEffect(() => {
+    if (mapRef.current && is3DMode) {
+      console.log('🎯 useEffect: Applying tilt to loaded map:', tilt);
+      mapRef.current.setTilt(tilt);
+    }
+  }, [tilt, is3DMode]);
 
   // Get user location if not provided
   useEffect(() => {
@@ -259,7 +269,27 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   };
 
   const handleMapTypeChange = (newMapType: MapType) => {
+    console.log('🗺️ Changing map type to:', newMapType);
     setMapType(newMapType);
+    
+    // Handle 3D modes
+    if (newMapType === '3d' || newMapType === '3d-satellite') {
+      console.log('🎯 Entering 3D mode:', newMapType);
+      setIs3DMode(true);
+      setTilt(45); // Set a default tilt for 3D view
+      if (mapRef.current) {
+        console.log('🎯 Applying 3D tilt to map:', 45);
+        mapRef.current.setTilt(45);
+      }
+    } else {
+      console.log('🎯 Exiting 3D mode');
+      setIs3DMode(false);
+      setTilt(0);
+      if (mapRef.current) {
+        console.log('🎯 Resetting tilt to 0');
+        mapRef.current.setTilt(0);
+      }
+    }
   };
 
   const handleMarkerClick = (marker: QlooRecommendation) => {
@@ -361,11 +391,27 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
 
   const getMapStyle = () => {
-    if (mapType === 'satellite' || mapType === 'hybrid') {
+    if (mapType === 'satellite' || mapType === 'hybrid' || mapType === '3d-satellite') {
       return undefined; // Use default satellite styling
+    }
+    if (mapType === '3d') {
+      return undefined; // Use default styling for 3D mode
     }
     return theme === 'dark' ? customDarkMapStyle : customLightMapStyle;
   };
+
+  // Memoize map options to prevent re-rendering when 3D mode changes
+  const mapOptions = useMemo(() => ({
+    styles: getMapStyle(),
+    disableDefaultUI: false,
+    zoomControl: true,
+    draggable: true,
+    fullscreenControl: false,
+    mapTypeControl: false, // We have custom controls
+    streetViewControl: false, // We have custom controls
+    // Always include mapId for 3D support (renderingType will be auto-detected)
+    mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID',
+  }), [mapType, theme]); // Only re-create when mapType or theme changes, not when is3DMode changes
 
   if (loadError) {
     return <div 
@@ -398,7 +444,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     );
   }
 
-  const mapTypes: MapType[] = ['roadmap', 'satellite', 'hybrid', 'terrain'];
+  const mapTypes: MapType[] = ['roadmap', 'satellite', 'hybrid', 'terrain', '3d', '3d-satellite'];
 
   return (
     <div className="w-full h-full">
@@ -429,22 +475,36 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
 
 
-        <GoogleMapComponent
-          mapContainerStyle={MAP_CONTAINER_STYLE}
-          center={center}
-          zoom={zoom}
-          mapTypeId={mapType}
-          onLoad={map => { mapRef.current = map; }}
-          options={{
-            styles: getMapStyle(),
-            disableDefaultUI: false,
-            zoomControl: true,
-            draggable: true,
-            fullscreenControl: false,
-            mapTypeControl: false, // We have custom controls
-            streetViewControl: false, // We have custom controls
-          }}
-        >
+                                   <GoogleMapComponent
+            mapContainerStyle={MAP_CONTAINER_STYLE}
+            center={center}
+            zoom={zoom}
+            mapTypeId={mapType === '3d' ? 'roadmap' : mapType === '3d-satellite' ? 'satellite' : mapType}
+            onLoad={map => { 
+              mapRef.current = map; 
+              // Set initial tilt for 3D mode
+              if (is3DMode) {
+                console.log('🎯 Setting initial 3D tilt:', tilt);
+                map.setTilt(tilt);
+              }
+            }}
+            options={{
+              styles: getMapStyle(),
+              disableDefaultUI: false,
+              zoomControl: true,
+              draggable: true,
+              fullscreenControl: false,
+              mapTypeControl: false, // We have custom controls
+              streetViewControl: false, // We have custom controls
+              // Include mapId for 3D support (renderingType will be auto-detected)
+              mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID',
+              // Apply 3D-specific options only when in 3D mode
+              ...(is3DMode && {
+                tilt: tilt,
+                heading: 0
+              })
+            }}
+         >
           {/* User location marker */}
           {showUserLocation && userLocation && customIcon && (
             <Marker
@@ -603,81 +663,149 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                           backgroundColor: mapType === type ? '#3b82f6' : 'var(--color-bg-secondary)',
                           color: mapType === type ? '#ffffff' : 'var(--color-text-secondary)'
                         }}
-                      >
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </button>
+                                               >
+                           {type === '3d-satellite' ? '3D Satellite' : type.charAt(0).toUpperCase() + type.slice(1)}
+                         </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Action Controls */}
-                <div className="mb-3">
-                  <h3 
-                    className="text-xs font-semibold mb-2 uppercase tracking-wide"
-                    style={{
-                      color: 'var(--color-text-secondary)'
-                    }}
-                  >
-                    Actions
-                  </h3>
-                  <div className="space-y-1">
-                    {/* My Location */}
-                    {showUserLocation && (
-                      <button
-                        onClick={handleRecenter}
-                        className="w-full px-2 py-1.5 text-xs rounded transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"
-                        style={{
-                          backgroundColor: 'var(--color-bg-secondary)',
-                          color: 'var(--color-text-secondary)'
-                        }}
-                      >
-                        <MapPin className="w-3 h-3 mr-2" />
-                        My Location
-                      </button>
-                    )}
-                    
-                    {/* Enhanced Features */}
-                    <>
-                      {/* Air Quality */}
-                      <button
-                        onClick={handleAirQualityToggle}
-                        disabled={loadingAirQuality}
-                        className={`w-full px-2 py-1.5 text-xs rounded transition-all duration-200 flex items-center ${
-                          showAirQuality
-                            ? 'bg-green-500 text-white shadow-md'
-                            : 'hover:bg-gray-200 dark:hover:bg-gray-600'
-                        } ${loadingAirQuality ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        style={{
-                          backgroundColor: showAirQuality ? '#10b981' : 'var(--color-bg-secondary)',
-                          color: showAirQuality ? '#ffffff' : 'var(--color-text-secondary)'
-                        }}
-                      >
-                        <Zap className="w-3 h-3 mr-2" />
-                        {loadingAirQuality ? 'Loading...' : 'Air Quality'}
-                      </button>
+                                 {/* Action Controls */}
+                 <div className="mb-3">
+                   <h3 
+                     className="text-xs font-semibold mb-2 uppercase tracking-wide"
+                     style={{
+                       color: 'var(--color-text-secondary)'
+                     }}
+                   >
+                     Actions
+                   </h3>
+                   <div className="space-y-1">
+                     {/* My Location */}
+                     {showUserLocation && (
+                       <button
+                         onClick={handleRecenter}
+                         className="w-full px-2 py-1.5 text-xs rounded transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"
+                         style={{
+                           backgroundColor: 'var(--color-bg-secondary)',
+                           color: 'var(--color-text-secondary)'
+                         }}
+                       >
+                         <MapPin className="w-3 h-3 mr-2" />
+                         My Location
+                       </button>
+                     )}
+                     
+                     {/* Enhanced Features */}
+                     <>
+                       {/* Air Quality */}
+                       <button
+                         onClick={handleAirQualityToggle}
+                         disabled={loadingAirQuality}
+                         className={`w-full px-2 py-1.5 text-xs rounded transition-all duration-200 flex items-center ${
+                           showAirQuality
+                             ? 'bg-green-500 text-white shadow-md'
+                             : 'hover:bg-gray-200 dark:hover:bg-gray-600'
+                         } ${loadingAirQuality ? 'opacity-50 cursor-not-allowed' : ''}`}
+                         style={{
+                           backgroundColor: showAirQuality ? '#10b981' : 'var(--color-bg-secondary)',
+                           color: showAirQuality ? '#ffffff' : 'var(--color-text-secondary)'
+                         }}
+                       >
+                         <Zap className="w-3 h-3 mr-2" />
+                         {loadingAirQuality ? 'Loading...' : 'Air Quality'}
+                       </button>
 
-                      {/* Weather Radar */}
-                      <button
-                        onClick={handleWeatherToggle}
-                        disabled={loadingWeather}
-                        className={`w-full px-2 py-1.5 text-xs rounded transition-all duration-200 flex items-center ${
-                          showWeather
-                            ? 'bg-blue-500 text-white shadow-md'
-                            : 'hover:bg-gray-200 dark:hover:bg-gray-600'
-                        } ${loadingWeather ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        style={{
-                          backgroundColor: showWeather ? '#3b82f6' : 'var(--color-bg-secondary)',
-                          color: showWeather ? '#ffffff' : 'var(--color-text-secondary)'
-                        }}
-                      >
-                        <Cloud className="w-3 h-3 mr-2" />
-                        {loadingWeather ? 'Loading...' : 'Weather Radar'}
-                      </button>
+                       {/* Weather Radar */}
+                       <button
+                         onClick={handleWeatherToggle}
+                         disabled={loadingWeather}
+                         className={`w-full px-2 py-1.5 text-xs rounded transition-all duration-200 flex items-center ${
+                           showWeather
+                             ? 'bg-blue-500 text-white shadow-md'
+                             : 'hover:bg-gray-200 dark:hover:bg-gray-600'
+                         } ${loadingWeather ? 'opacity-50 cursor-not-allowed' : ''}`}
+                         style={{
+                           backgroundColor: showWeather ? '#3b82f6' : 'var(--color-bg-secondary)',
+                           color: showWeather ? '#ffffff' : 'var(--color-text-secondary)'
+                         }}
+                       >
+                         <Cloud className="w-3 h-3 mr-2" />
+                         {loadingWeather ? 'Loading...' : 'Weather Radar'}
+                       </button>
+                     </>
+                   </div>
+                 </div>
 
-
-                    </>
-                  </div>
-                </div>
+                 {/* 3D Controls - Only show when in 3D mode */}
+                 {is3DMode && (
+                   <div className="mb-3">
+                     <h3 
+                       className="text-xs font-semibold mb-2 uppercase tracking-wide"
+                       style={{
+                         color: 'var(--color-text-secondary)'
+                       }}
+                     >
+                       3D Controls
+                     </h3>
+                     <div className="space-y-2">
+                       {/* Tilt Control */}
+                       <div>
+                         <label 
+                           className="text-xs block mb-1"
+                           style={{
+                             color: 'var(--color-text-secondary)'
+                           }}
+                         >
+                           Tilt: {tilt}°
+                         </label>
+                         <input
+                           type="range"
+                           min="0"
+                           max="67.5"
+                           value={tilt}
+                           onChange={(e) => {
+                             const newTilt = parseInt(e.target.value);
+                             console.log('🎯 Tilt slider changed to:', newTilt);
+                             setTilt(newTilt);
+                             if (mapRef.current) {
+                               console.log('🎯 Applying tilt to map:', newTilt);
+                               mapRef.current.setTilt(newTilt);
+                             } else {
+                               console.log('⚠️ Map ref not available for tilt');
+                             }
+                           }}
+                           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                           style={{
+                             backgroundColor: 'var(--color-bg-secondary)'
+                           }}
+                         />
+                       </div>
+                       
+                       {/* Reset 3D View */}
+                       <button
+                         onClick={() => {
+                           console.log('🎯 Resetting 3D view to 45°');
+                           setTilt(45);
+                           if (mapRef.current) {
+                             console.log('🎯 Applying reset tilt to map: 45');
+                             mapRef.current.setTilt(45);
+                           } else {
+                             console.log('⚠️ Map ref not available for reset');
+                           }
+                         }}
+                         className="w-full px-2 py-1.5 text-xs rounded transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"
+                         style={{
+                           backgroundColor: 'var(--color-bg-secondary)',
+                           color: 'var(--color-text-secondary)'
+                         }}
+                       >
+                         <Box className="w-3 h-3 mr-2" />
+                         Reset 3D View
+                       </button>
+                     </div>
+                   </div>
+                 )}
               </div>
             )}
           </div>
