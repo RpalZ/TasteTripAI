@@ -1,8 +1,9 @@
 'use client'
 
-import { MapPin, ExternalLink, Heart } from 'lucide-react'
-import { useState } from 'react'
+import { MapPin, ExternalLink, Eye } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useTheme } from './ThemeContext'
+import SaveBookmarkButton from './SaveBookmarkButton'
 
 interface Recommendation {
   title: string
@@ -11,6 +12,25 @@ interface Recommendation {
   location?: string
   lat?: number
   lng?: number
+  // Add Qloo-specific fields for detail page navigation
+  entity_id?: string
+  name?: string
+  subtype?: string
+  properties?: {
+    address?: string
+    phone?: string
+    business_rating?: number
+    keywords?: Array<string | { name: string; count?: number }>
+    images?: Array<{ url: string; type: string }>
+    price_level?: number
+    website?: string
+  }
+  popularity?: number
+  location_data?: {
+    lat: number
+    lon: number
+    geohash: string
+  }
 }
 
 interface RecommendationCardProps {
@@ -22,8 +42,8 @@ interface RecommendationCardProps {
  * Includes category icons, descriptions, and action buttons
  */
 export default function RecommendationCard({ recommendation }: RecommendationCardProps) {
-  const [isLiked, setIsLiked] = useState(false)
   const { theme } = useTheme();
+  const router = useRouter();
 
   const getCategoryIcon = (type: string) => {
     switch (type.toLowerCase()) {
@@ -69,6 +89,52 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
     }
   }
 
+  const createDetailData = () => {
+    return {
+      name: recommendation.name,
+      entity_id: recommendation.entity_id,
+      type: recommendation.type,
+      subtype: recommendation.subtype || recommendation.type,
+      description: recommendation.description,
+      properties: {
+        address: recommendation.properties?.address || recommendation.location || '',
+        phone: recommendation.properties?.phone,
+        business_rating: recommendation.properties?.business_rating,
+        keywords: recommendation.properties?.keywords,
+        images: recommendation.properties?.images,
+        price_level: recommendation.properties?.price_level
+      },
+      popularity: recommendation.popularity || 0,
+      location: {
+        lat: recommendation.location_data?.lat || recommendation.lat || 0,
+        lon: recommendation.location_data?.lon || recommendation.lng || 0,
+        geohash: recommendation.location_data?.geohash || ''
+      }
+    }
+  }
+
+  const handleViewDetails = () => {
+    // Check if we have the necessary data for the detail page
+    if (recommendation.entity_id && recommendation.name) {
+      const detailData = createDetailData()
+      
+      // Encode the data using a Unicode-safe method
+      try {
+        // Use encodeURIComponent to handle Unicode characters safely
+        const jsonString = JSON.stringify(detailData)
+        const encodedData = encodeURIComponent(jsonString)
+        router.push(`/recommendation/${recommendation.entity_id}?data=${encodedData}`)
+      } catch (error) {
+        console.error('❌ Error encoding recommendation data:', error)
+        // Fallback to external maps if encoding fails
+        handleBooking()
+      }
+    } else {
+      // Fallback to external maps if no detail page data
+      handleBooking()
+    }
+  }
+
   return (
     <div style={{
       background: 'var(--color-card-bg)',
@@ -90,13 +156,21 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
             <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium`} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}>{recommendation.type}</span>
           </div>
         </div>
-        <button
-          onClick={() => setIsLiked(!isLiked)}
-          className={`p-2 rounded-full transition-all duration-200 ${isLiked ? 'bg-red-100 text-red-600' : ''}`}
-          style={!isLiked ? { background: 'var(--color-card-bg)', color: 'var(--color-text-secondary)' } : {}}
-        >
-          <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-        </button>
+        {recommendation.entity_id && (
+          <SaveBookmarkButton
+            qlooId={recommendation.entity_id}
+            name={recommendation.name || recommendation.title}
+            lat={recommendation.location_data?.lat || recommendation.lat || 0}
+            lon={recommendation.location_data?.lon || recommendation.lng || 0}
+            address={recommendation.properties?.address || recommendation.location || ''}
+            description={recommendation.subtype || recommendation.type}
+            website={recommendation.properties?.website}
+            imageUrl={recommendation.properties?.images?.[0]?.url}
+            variant="icon"
+            size="sm"
+            className="p-2"
+          />
+        )}
       </div>
       <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--color-text-secondary)' }}>{recommendation.description}</p>
       {recommendation.location && (
@@ -106,24 +180,35 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
         </div>
       )}
       <div className="flex space-x-2">
+        {/* View Details Button - Primary Action */}
+        <button
+          onClick={handleViewDetails}
+          className="flex-1 flex items-center justify-center space-x-2 text-sm rounded-xl px-4 py-2 font-semibold transition-all duration-300 ease-in-out"
+          style={{
+            background: 'var(--color-accent)',
+            color: 'var(--color-on-accent)',
+            border: 'none',
+          }}
+        >
+          <Eye className="w-4 h-4" />
+          <span>View Details</span>
+        </button>
+        
+        {/* Secondary Actions */}
         {(recommendation.location || (recommendation.lat && recommendation.lng)) && (
           <button
             onClick={handleBooking}
-            className="flex-1 flex items-center justify-center space-x-2 text-sm rounded-xl px-4 py-2 font-semibold transition-all duration-300 ease-in-out"
+            className="btn-secondary flex items-center space-x-2 text-sm"
             style={{
-              background: 'var(--color-accent)',
-              color: 'var(--color-on-accent)',
-              border: 'none',
+              background: 'var(--color-bg-secondary)',
+              color: 'var(--color-text-secondary)',
+              border: '1px solid var(--color-card-border)',
             }}
           >
             <MapPin className="w-4 h-4" />
-            <span>View on Maps</span>
+            <span>Maps</span>
           </button>
         )}
-        <button className="btn-secondary flex items-center space-x-2 text-sm">
-          <ExternalLink className="w-4 h-4" />
-          <span>Learn More</span>
-        </button>
       </div>
     </div>
   )

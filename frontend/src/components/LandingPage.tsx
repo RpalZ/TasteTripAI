@@ -235,7 +235,9 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
           </p>
         </div>
         <div className="w-full max-w-4xl flex justify-center">
-          <GoogleMap />
+          <div className="w-full h-[500px] rounded-xl shadow-lg overflow-hidden">
+            <GoogleMap />
+          </div>
         </div>
       </section>
 

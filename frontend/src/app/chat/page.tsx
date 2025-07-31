@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '@/components/ThemeContext'
 import { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
+import { useChatContext } from '@/context/ChatContext'
 import ChatWelcome from '@/components/ChatWelcome'
 
 export default function ChatPage() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { clearRecommendationsFromStorage } = useChatContext();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [hasStartedChat, setHasStartedChat] = useState(false);
@@ -105,6 +107,9 @@ export default function ChatPage() {
       }
       
       console.log('✅ Conversation deleted successfully');
+      
+      // Clear stored recommendations for this conversation
+      clearRecommendationsFromStorage(conversationId);
       
       // Refresh conversations list
       if (session.session) {
